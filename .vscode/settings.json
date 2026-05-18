@@ -1,0 +1,21 @@
+{
+  "files.exclude": {
+    "node_modules": "explorerExcludedFiles",
+    ".DS_Store": "explorerExcludedFiles",
+    ".cache": "explorerExcludedFiles",
+    "build": "explorerExcludedFiles",
+    "app/build": "explorerExcludedFiles",
+    "public/build/": "explorerExcludedFiles",
+    "public/_dev": "explorerExcludedFiles",
+    "app/public/build": "explorerExcludedFiles",
+    "prisma/dev.sqlite": "explorerExcludedFiles",
+    "prisma/dev.sqlite-journal": "explorerExcludedFiles",
+    "database.sqlite": "explorerExcludedFiles",
+    ".env": "explorerExcludedFiles",
+    ".env.*": "explorerExcludedFiles",
+    "extensions/*/dist": "explorerExcludedFiles",
+    ".shopify/*": "explorerExcludedFiles",
+    ".shopify.lock": "explorerExcludedFiles",
+    ".react-router/": "explorerExcludedFiles"
+  }
+}
