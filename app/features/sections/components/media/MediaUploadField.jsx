@@ -14,14 +14,17 @@ export default function MediaUploadField({
   alt = "Selected image",
   onChange,
   onRemove,
+  error = "",
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  const borderColor = error ? "var(--p-color-border-critical)" : "var(--p-color-border)";
 
   return (
     <>
       <BlockStack gap="200">
         <Text variant="bodySm" tone="subdued">
-          Image source
+          Image
         </Text>
 
         {value ? (
@@ -38,7 +41,7 @@ export default function MediaUploadField({
         ) : (
           <div
             style={{
-              border: "1px dashed var(--p-color-border)",
+              border: `2px dashed ${borderColor}`,
               borderRadius: "8px",
               padding: "32px 16px",
             }}
@@ -67,6 +70,11 @@ export default function MediaUploadField({
               </Text>
             </BlockStack>
           </div>
+        )}
+        {error && (
+          <Text variant="bodySm" tone="critical">
+            {error}
+          </Text>
         )}
       </BlockStack>
 

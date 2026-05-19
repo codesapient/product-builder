@@ -1,31 +1,59 @@
 // app/features/sections/sectionRegistry.js
 // ── Add a new section type here — nowhere else needs to change ────────────────
 
-import { ImageIcon, PlayCircleIcon, LayoutColumns2Icon } from '@shopify/polaris-icons'
+import { ImageIcon, PlayCircleIcon, LayoutColumns2Icon, ImageWithTextOverlayIcon, MinusIcon, TextBlockIcon, ListBulletedIcon } from '@shopify/polaris-icons'
 import { SECTION_TYPES } from './types'
 import ImageSection from './components/ImageSection'
 import VideoSection from './components/VideoSection'
 import ImageColumnsSection from './components/ImageColumnsSection'
+import BannerWithTextSection from './components/BannerWithTextSection'
+import DividerSection from './components/DividerSection'
+import RichTextSection from './components/RichTextSection'
+import AccordionSection from './components/AccordionSection'
 
 const registry = {
   [SECTION_TYPES.IMAGE]: {
-    label: 'Image section',
+    label: 'Image with text',
     icon: ImageIcon,
     tone: 'success',
     component: ImageSection,
   },
   [SECTION_TYPES.VIDEO]: {
-    label: 'Video section',
+    label: 'Video',
     icon: PlayCircleIcon,
     tone: 'caution',
     component: VideoSection,
   },
-  [SECTION_TYPES.IMAGE_COLUMNS]: {
-    label: 'Image columns',
+  [SECTION_TYPES.TEXT_COLUMNS_WITH_IMAGES]: {
+    label: 'Text columns with images',
     icon: LayoutColumns2Icon,
     tone: 'success',
     component: ImageColumnsSection,
   },
+  [SECTION_TYPES.BANNER_WITH_TEXT]: {
+    label: 'Banner',
+    icon: ImageWithTextOverlayIcon,
+    tone: 'success',
+    component: BannerWithTextSection,
+  },
+  [SECTION_TYPES.DIVIDER]: {
+    label: 'Divider',
+    icon: MinusIcon,
+    tone: 'subdued',
+    component: DividerSection,
+  },
+  [SECTION_TYPES.RICH_TEXT]: {
+    label: 'Rich text',
+    icon: TextBlockIcon,
+    tone: 'success',
+    component: RichTextSection,
+  },
+  [SECTION_TYPES.ACCORDION]: {
+    label: 'Accordion',
+    icon: ListBulletedIcon,
+    tone: 'success',
+    component: AccordionSection,
+  }
 }
 
 export const getSectionMeta = (type) =>

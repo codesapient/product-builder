@@ -2,7 +2,7 @@
 
 client_id = "ce4b3c48719742812c2bc62c5271b703"
 name = "Product Builder"
-application_url = "https://product-sections-manager.onrender.com"
+application_url = "https://product-builder-w747.onrender.com/"
 embedded = true
 
 [build]
@@ -25,5 +25,5 @@ scopes = "write_products,write_files,read_files,write_metaobjects,write_metaobje
 
 [auth]
 redirect_urls = [
-  "https://product-sections-manager.onrender.com/auth/callback"
+  "https://product-builder-w747.onrender.com/auth/callback"
 ]

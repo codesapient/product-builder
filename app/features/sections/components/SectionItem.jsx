@@ -1,6 +1,6 @@
 // app/features/sections/components/SectionItem.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, BlockStack, Collapsible } from "@shopify/polaris";
@@ -9,9 +9,27 @@ import { getSectionMeta } from "../sectionRegistry";
 import DeleteSectionModal from "../../../components/DeleteSectionModal";
 import SortableAccordionHeader from "./SortableAccordionHeader";
 
-export default function SectionItem({ section, onUpdate, onRemove }) {
+export default function SectionItem({
+  section,
+  onUpdate,
+  onRemove,
+  savedTrigger,
+  validationTrigger,
+  hasValidationError,
+}) {
   const [expanded, setExpanded] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Collapse section when saved
+  useEffect(() => {
+    setExpanded(false);
+  }, [savedTrigger]);
+
+  useEffect(() => {
+    if (hasValidationError) {
+      setExpanded(true);
+    }
+  }, [validationTrigger, hasValidationError]);
 
   const {
     attributes,
@@ -58,6 +76,8 @@ export default function SectionItem({ section, onUpdate, onRemove }) {
             <SectionComponent
               section={section}
               onChange={(changes) => onUpdate(section.id, changes)}
+              onSaved={savedTrigger}
+              onValidate={validationTrigger}
             />
           </Collapsible>
         </BlockStack>

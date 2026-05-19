@@ -6,6 +6,10 @@ import {
   createImageSection,
   createVideoSection,
   createImageColumnsSection,
+  createBannerWithTextSection,
+  createDividerSection,
+  createRichTextSection,
+  createAccordionSection,
   SECTION_TYPES,
 } from '../types'
 
@@ -18,6 +22,14 @@ export function useSections(initialSections = []) {
         ? createImageSection()
         : type === SECTION_TYPES.VIDEO
         ? createVideoSection()
+        : type === SECTION_TYPES.BANNER_WITH_TEXT
+        ? createBannerWithTextSection()
+        : type === SECTION_TYPES.DIVIDER
+        ? createDividerSection()
+        : type === SECTION_TYPES.RICH_TEXT
+        ? createRichTextSection()
+        : type === SECTION_TYPES.ACCORDION
+        ? createAccordionSection()
         : createImageColumnsSection()
     setSections((prev) => [...prev, newSection])
   }

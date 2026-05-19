@@ -11,22 +11,29 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { Page, Layout, Card, Button, Box, Banner, BlockStack, Text, Icon } from '@shopify/polaris'
-import { PlusIcon } from '@shopify/polaris-icons'
+import { Page, Layout, Card, Button, Banner, BlockStack, Text } from '@shopify/polaris'
+import { PlusIcon, ArrowLeftIcon, ViewIcon } from '@shopify/polaris-icons'
 
+import { useState, useCallback, useEffect } from 'react'
 import { useSections } from '../hooks/useSections'
 import { useProductMetafield } from '../hooks/useProductMetafield'
 import { deserializeSections } from '../utils'
 import { SECTION_TYPES } from '../types'
 import { getSectionMeta } from '../sectionRegistry'
+import { validateSection } from '../schema'
 import SectionItem from './SectionItem'
+import { useNavigate } from 'react-router'
 
 // ── Declare which section types appear in the "Add section" panel ─────────────
 
 const ADD_SECTION_MENU = [
   SECTION_TYPES.IMAGE,
+  SECTION_TYPES.TEXT_COLUMNS_WITH_IMAGES,
   SECTION_TYPES.VIDEO,
-  SECTION_TYPES.IMAGE_COLUMNS,
+  SECTION_TYPES.BANNER_WITH_TEXT,
+  SECTION_TYPES.DIVIDER,
+  SECTION_TYPES.RICH_TEXT,
+  SECTION_TYPES.ACCORDION,
 ]
 
 export default function SectionsList({ product }) {
@@ -35,22 +42,120 @@ export default function SectionsList({ product }) {
     useSections(initialSections)
   const { saveSections, isSaving, isSuccess } = useProductMetafield()
   const sensors = useSensors(useSensor(PointerSensor))
+  const [savedTrigger, setSavedTrigger] = useState(0)
+  const [validationErrors, setValidationErrors] = useState([])
+  const [invalidSectionIds, setInvalidSectionIds] = useState(new Set())
+  const [showValidationTrigger, setShowValidationTrigger] = useState(0)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  const navigate = useNavigate()
+  const storefrontUrl = product?.storeUrl?.replace(/\/$/, '')
+  const productPreviewUrl =
+    product?.onlineStorePreviewUrl ||
+    product?.onlineStoreUrl ||
+    (storefrontUrl && product?.handle ? `${storefrontUrl}/products/${product.handle}` : undefined)
+
+
+  useEffect(() => {
+    if (isSuccess && validationErrors.length === 0) {
+      setShowSuccess(true)
+    }
+  }, [isSuccess, validationErrors.length])
+
+  const handleSave = useCallback(() => {
+    setShowSuccess(false)
+
+    // Validate all sections
+    const errors = []
+    const invalidIds = new Set()
+
+    sections.forEach((section, index) => {
+      const { isValid, errors: sectionErrors } = validateSection(section)
+      if (!isValid) {
+        invalidIds.add(section.id)
+        errors.push(...sectionErrors.map((err) => `Section ${index + 1}: ${err}`))
+      }
+    })
+
+    setValidationErrors(errors)
+    setInvalidSectionIds(invalidIds)
+
+    if (errors.length > 0) {
+      // Show validation errors and trigger validation UI in sections
+      setShowValidationTrigger((prev) => prev + 1)
+      return
+    }
+
+    // All valid, proceed with save
+    saveSections(sections)
+    setValidationErrors([])
+    setInvalidSectionIds(new Set())
+    // Trigger collapse of all sections
+    setSavedTrigger((prev) => prev + 1)
+  }, [sections, saveSections])
+
+  const handleUpdateSection = useCallback((id, changes) => {
+    setShowSuccess(false)
+    updateSection(id, changes)
+  }, [updateSection])
+
+  const handleAddSection = useCallback((type) => {
+    setShowSuccess(false)
+    addSection(type)
+  }, [addSection])
+
+  const handleRemoveSection = useCallback((id) => {
+    setShowSuccess(false)
+    removeSection(id)
+    setInvalidSectionIds((prevIds) => {
+      const nextIds = new Set(prevIds)
+      nextIds.delete(id)
+      return nextIds
+    })
+  }, [removeSection])
 
   const handleDragEnd = ({ active, over }) => {
-    if (active.id !== over?.id) reorderSections(active.id, over.id)
+    if (active.id !== over?.id) {
+      setShowSuccess(false)
+      reorderSections(active.id, over.id)
+    }
   }
 
   return (
     <Page
       title={product?.title}
+      backAction={{
+        content: 'Home',
+        icon: ArrowLeftIcon,
+        onAction: () => navigate('/app'),
+      }}
       primaryAction={{
         content: 'Save sections',
         loading: isSaving,
-        onAction: () => saveSections(sections),
+        onAction: handleSave,
       }}
+      secondaryActions={[
+        {
+          content: 'View product',
+          icon: ViewIcon,
+          url: productPreviewUrl,
+          external: true,
+          disabled: !productPreviewUrl,
+          accessibilityLabel: 'View product in online store',
+        },
+      ]}
     >
       <BlockStack gap="400">
-        {isSuccess && <Banner tone="success" title="Sections saved successfully!" />}
+        {showSuccess && validationErrors.length === 0 && (
+          <Banner tone="success" title="Sections saved successfully!" />
+        )}
+        {validationErrors.length > 0 && (
+          <Banner tone="critical" title="Please fix validation errors:">
+            {validationErrors.map((error, idx) => (
+              <div key={idx}>{error}</div>
+            ))}
+          </Banner>
+        )}
 
         <Layout>
           {/* Left — Add section */}
@@ -63,12 +168,13 @@ export default function SectionsList({ product }) {
                 </Text>
 
                 {ADD_SECTION_MENU.map((type) => {
-                  const { label, icon } = getSectionMeta(type)
+                  const { label } = getSectionMeta(type)
                   return (
                     <Button
+                      key={type}
                       fullWidth
                       icon={PlusIcon}
-                      onClick={() => addSection(type)}
+                      onClick={() => handleAddSection(type)}
                       textAlign="left"
                     >
                       <span style={{ paddingBlock: "4px", display: "block" }}>
@@ -104,8 +210,11 @@ export default function SectionsList({ product }) {
                       <SectionItem
                         key={section.id}
                         section={section}
-                        onUpdate={updateSection}
-                        onRemove={removeSection}
+                        onUpdate={handleUpdateSection}
+                        onRemove={handleRemoveSection}
+                        savedTrigger={savedTrigger}
+                        validationTrigger={showValidationTrigger}
+                        hasValidationError={invalidSectionIds.has(section.id)}
                       />
                     ))
                   )}

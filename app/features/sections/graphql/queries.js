@@ -1,8 +1,16 @@
 export const GET_PRODUCT_WITH_SECTIONS = `#graphql
   query GetProductWithSections($id: ID!) {
+    shop {
+      primaryDomain {
+        url
+      }
+    }
     product(id: $id) {
       id
       title
+      handle
+      onlineStoreUrl
+      onlineStorePreviewUrl
       metafield(namespace: "custom", key: "product_sections") {
         id
         value

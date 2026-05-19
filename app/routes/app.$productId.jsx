@@ -14,7 +14,12 @@ export const loader = async ({ request, params }) => {
   })
 
   const { data } = await response.json()
-  return { product: data.product }
+  return {
+    product: {
+      ...data.product,
+      storeUrl: data.shop?.primaryDomain?.url,
+    },
+  }
 }
 
 export const action = async ({ request, params }) => {
