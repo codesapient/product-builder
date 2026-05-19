@@ -72,6 +72,7 @@ export const SECTION_SCHEMAS = {
       backgroundImageUrl: { type: 'string', required: true, description: 'Banner background image URL' },
       heading: { type: 'string', required: true, description: 'Banner heading' },
       textAlignment: { type: 'string', required: false, description: 'Text alignment (left/center/right)' },
+      borderRadius: { type: 'number', required: false, description: 'Banner border radius in pixels' },
     },
   },
 
@@ -93,6 +94,11 @@ export const SECTION_SCHEMAS = {
       description: { type: 'string', required: false, description: 'Rich text body content' },
       backgroundColor: { type: 'string', required: false, description: 'Section background color' },
       textAlignment: { type: 'string', required: false, description: 'Text alignment (left/center/right)' },
+      borderRadius: { type: 'number', required: false, description: 'Section border radius in pixels' },
+      paddingTop: { type: 'number', required: false, description: 'Top padding in pixels' },
+      paddingRight: { type: 'number', required: false, description: 'Right padding in pixels' },
+      paddingBottom: { type: 'number', required: false, description: 'Bottom padding in pixels' },
+      paddingLeft: { type: 'number', required: false, description: 'Left padding in pixels' },
     },
   },
 

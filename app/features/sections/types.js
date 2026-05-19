@@ -48,6 +48,7 @@ export const createBannerWithTextSection = () => ({
   heading: '',
   backgroundImageUrl: '',
   textAlignment: 'center',
+  borderRadius: 0,
 })
 
 export const createDividerSection = () => ({
@@ -65,6 +66,11 @@ export const createRichTextSection = () => ({
   description: '',
   backgroundColor: '#ffffff',
   textAlignment: 'center',
+  borderRadius: 8,
+  paddingTop: 24,
+  paddingRight: 24,
+  paddingBottom: 24,
+  paddingLeft: 24,
 })
 
 export const createAccordionSection = () => ({

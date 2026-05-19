@@ -13,6 +13,7 @@ export default function SectionItem({
   section,
   onUpdate,
   onRemove,
+  onDuplicate,
   savedTrigger,
   validationTrigger,
   hasValidationError,
@@ -62,6 +63,7 @@ export default function SectionItem({
             title={label}
             expanded={expanded}
             onToggle={() => setExpanded((v) => !v)}
+            onDuplicate={() => onDuplicate(section.id)}
             onDelete={() => setShowDeleteModal(true)}
             dragAttributes={attributes}
             dragListeners={listeners}
@@ -69,6 +71,7 @@ export default function SectionItem({
             leadingIcon={icon}
             leadingIconTone={tone}
             toggleAccessibilityLabel="Toggle section"
+            duplicateAccessibilityLabel="Duplicate section"
             deleteAccessibilityLabel="Remove section"
           />
 

@@ -38,7 +38,7 @@ const ADD_SECTION_MENU = [
 
 export default function SectionsList({ product }) {
   const initialSections = deserializeSections(product?.metafield?.value)
-  const { sections, addSection, removeSection, updateSection, reorderSections } =
+  const { sections, addSection, removeSection, duplicateSection, updateSection, reorderSections } =
     useSections(initialSections)
   const { saveSections, isSaving, isSuccess } = useProductMetafield()
   const sensors = useSensors(useSensor(PointerSensor))
@@ -113,6 +113,11 @@ export default function SectionsList({ product }) {
       return nextIds
     })
   }, [removeSection])
+
+  const handleDuplicateSection = useCallback((id) => {
+    setShowSuccess(false)
+    duplicateSection(id)
+  }, [duplicateSection])
 
   const handleDragEnd = ({ active, over }) => {
     if (active.id !== over?.id) {
@@ -212,6 +217,7 @@ export default function SectionsList({ product }) {
                         section={section}
                         onUpdate={handleUpdateSection}
                         onRemove={handleRemoveSection}
+                        onDuplicate={handleDuplicateSection}
                         savedTrigger={savedTrigger}
                         validationTrigger={showValidationTrigger}
                         hasValidationError={invalidSectionIds.has(section.id)}

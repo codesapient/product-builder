@@ -4,6 +4,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
+  RangeSlider,
   Text,
   TextField,
 } from "@shopify/polaris";
@@ -18,6 +19,12 @@ const ALIGNMENT_OPTIONS = [
   { label: "Right", value: "right" },
 ];
 
+const MIN_RADIUS = 0;
+const MAX_RADIUS = 80;
+
+const clampRadius = (value) =>
+  Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, Number(value) || MIN_RADIUS));
+
 export default function BannerWithTextSection({
   section,
   onChange,
@@ -26,6 +33,7 @@ export default function BannerWithTextSection({
 }) {
   const [validationError, setValidationError] = useState(false);
   const requiredFields = getRequiredFields(SECTION_TYPES.BANNER_WITH_TEXT);
+  const borderRadius = clampRadius(section.borderRadius);
 
   useEffect(() => {
     if (onValidate === 0) return;
@@ -84,6 +92,17 @@ export default function BannerWithTextSection({
           ))}
         </ButtonGroup>
       </BlockStack>
+
+      <RangeSlider
+        label="Border radius"
+        min={MIN_RADIUS}
+        max={MAX_RADIUS}
+        step={1}
+        value={borderRadius}
+        output
+        suffix={<Text as="span" variant="bodySm">{borderRadius}px</Text>}
+        onChange={(borderRadius) => onChange({ borderRadius })}
+      />
 
     </BlockStack>
   );

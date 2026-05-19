@@ -4,12 +4,14 @@ import {
   ChevronUpIcon,
   DeleteIcon,
   DragHandleIcon,
+  DuplicateIcon,
 } from "@shopify/polaris-icons";
 
 export default function SortableAccordionHeader({
   title,
   expanded,
   onToggle,
+  onDuplicate,
   onDelete,
   dragAttributes,
   dragListeners,
@@ -19,6 +21,7 @@ export default function SortableAccordionHeader({
   titleAs = "h3",
   titleTone,
   toggleAccessibilityLabel,
+  duplicateAccessibilityLabel,
   deleteAccessibilityLabel,
 }) {
   return (
@@ -77,6 +80,14 @@ export default function SortableAccordionHeader({
           onClick={onToggle}
           accessibilityLabel={toggleAccessibilityLabel}
         />
+        {onDuplicate && (
+          <Button
+            variant="plain"
+            icon={DuplicateIcon}
+            onClick={onDuplicate}
+            accessibilityLabel={duplicateAccessibilityLabel}
+          />
+        )}
         <Button
           variant="plain"
           tone="critical"

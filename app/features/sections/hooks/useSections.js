@@ -13,6 +13,23 @@ import {
   SECTION_TYPES,
 } from '../types'
 
+const cloneSectionWithNewIds = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(cloneSectionWithNewIds)
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        key === 'id' ? crypto.randomUUID() : cloneSectionWithNewIds(nestedValue),
+      ])
+    )
+  }
+
+  return value
+}
+
 export function useSections(initialSections = []) {
   const [sections, setSections] = useState(initialSections)
 
@@ -38,6 +55,20 @@ export function useSections(initialSections = []) {
     setSections((prev) => prev.filter((s) => s.id !== id))
   }
 
+  const duplicateSection = (id) => {
+    setSections((prev) => {
+      const sectionIndex = prev.findIndex((s) => s.id === id)
+      if (sectionIndex === -1) return prev
+
+      const duplicate = cloneSectionWithNewIds(prev[sectionIndex])
+      return [
+        ...prev.slice(0, sectionIndex + 1),
+        duplicate,
+        ...prev.slice(sectionIndex + 1),
+      ]
+    })
+  }
+
   const updateSection = (id, changes) => {
     setSections((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
@@ -56,6 +87,7 @@ export function useSections(initialSections = []) {
     sections,
     addSection,
     removeSection,
+    duplicateSection,
     updateSection,
     reorderSections,
   }

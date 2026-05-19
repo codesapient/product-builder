@@ -6,6 +6,7 @@ import {
   ButtonGroup,
   Divider,
   InlineStack,
+  RangeSlider,
   Text,
   TextField,
 } from "@shopify/polaris";
@@ -20,6 +21,14 @@ const ALIGNMENT_OPTIONS = [
   { label: "Right", value: "right" },
 ];
 
+const MIN_SPACING = 0;
+const MAX_SPACING = 120;
+const MIN_RADIUS = 0;
+const MAX_RADIUS = 80;
+
+const clampNumber = (value, min, max, fallback) =>
+  Math.min(max, Math.max(min, Number(value) || fallback));
+
 export default function RichTextSection({
   section,
   onChange,
@@ -29,6 +38,16 @@ export default function RichTextSection({
   const [validationError, setValidationError] = useState(false);
   const requiredFields = getRequiredFields(SECTION_TYPES.RICH_TEXT);
   const backgroundColor = section.backgroundColor || "#ffffff";
+  const borderRadius = clampNumber(section.borderRadius, MIN_RADIUS, MAX_RADIUS, 8);
+  const paddingTop = clampNumber(section.paddingTop, MIN_SPACING, MAX_SPACING, 24);
+  const paddingRight = clampNumber(section.paddingRight, MIN_SPACING, MAX_SPACING, 24);
+  const paddingBottom = clampNumber(section.paddingBottom, MIN_SPACING, MAX_SPACING, 24);
+  const paddingLeft = clampNumber(section.paddingLeft, MIN_SPACING, MAX_SPACING, 24);
+  const syncedPadding =
+    paddingTop === paddingRight &&
+    paddingTop === paddingBottom &&
+    paddingTop === paddingLeft;
+  const allPadding = syncedPadding ? paddingTop : 24;
 
   useEffect(() => {
     if (onValidate === 0) return;
@@ -119,13 +138,94 @@ export default function RichTextSection({
         </ButtonGroup>
       </BlockStack>
 
+      <RangeSlider
+        label="Border radius"
+        min={MIN_RADIUS}
+        max={MAX_RADIUS}
+        step={1}
+        value={borderRadius}
+        output
+        suffix={<Text as="span" variant="bodySm">{borderRadius}px</Text>}
+        onChange={(borderRadius) => onChange({ borderRadius })}
+      />
+
+      <BlockStack gap="300">
+        <Text variant="bodyMd" as="p">
+          Padding
+        </Text>
+        <RangeSlider
+          label="All sides"
+          min={MIN_SPACING}
+          max={MAX_SPACING}
+          step={1}
+          value={allPadding}
+          output
+          suffix={
+            <Text as="span" variant="bodySm">
+              {syncedPadding ? `${allPadding}px` : "Mixed"}
+            </Text>
+          }
+          onChange={(padding) =>
+            onChange({
+              paddingTop: padding,
+              paddingRight: padding,
+              paddingBottom: padding,
+              paddingLeft: padding,
+            })
+          }
+        />
+        <RangeSlider
+          label="Top"
+          min={MIN_SPACING}
+          max={MAX_SPACING}
+          step={1}
+          value={paddingTop}
+          output
+          suffix={<Text as="span" variant="bodySm">{paddingTop}px</Text>}
+          onChange={(paddingTop) => onChange({ paddingTop })}
+        />
+        <RangeSlider
+          label="Right"
+          min={MIN_SPACING}
+          max={MAX_SPACING}
+          step={1}
+          value={paddingRight}
+          output
+          suffix={<Text as="span" variant="bodySm">{paddingRight}px</Text>}
+          onChange={(paddingRight) => onChange({ paddingRight })}
+        />
+        <RangeSlider
+          label="Bottom"
+          min={MIN_SPACING}
+          max={MAX_SPACING}
+          step={1}
+          value={paddingBottom}
+          output
+          suffix={<Text as="span" variant="bodySm">{paddingBottom}px</Text>}
+          onChange={(paddingBottom) => onChange({ paddingBottom })}
+        />
+        <RangeSlider
+          label="Left"
+          min={MIN_SPACING}
+          max={MAX_SPACING}
+          step={1}
+          value={paddingLeft}
+          output
+          suffix={<Text as="span" variant="bodySm">{paddingLeft}px</Text>}
+          onChange={(paddingLeft) => onChange({ paddingLeft })}
+        />
+      </BlockStack>
+
       <div
         style={{
           backgroundColor,
-          padding: "24px",
+          paddingTop,
+          paddingRight,
+          paddingBottom,
+          paddingLeft,
           textAlign: section.textAlignment || "center",
           border: "1px solid var(--p-color-border)",
-          borderRadius: "8px",
+          borderRadius,
         }}
       >
         <Text variant="headingMd" as="h3">
