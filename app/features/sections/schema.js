@@ -86,6 +86,14 @@ export const SECTION_SCHEMAS = {
     },
   },
 
+  [SECTION_TYPES.SPACER]: {
+    fields: {
+      id: { type: 'string', required: true, description: 'Unique identifier' },
+      type: { type: 'string', required: true, description: 'Section type' },
+      height: { type: 'number', required: false, description: 'Spacer height in pixels' },
+    },
+  },
+
   [SECTION_TYPES.RICH_TEXT]: {
     fields: {
       id: { type: 'string', required: true, description: 'Unique identifier' },
@@ -118,6 +126,37 @@ export const SECTION_SCHEMAS = {
       id: { type: 'string', required: true, description: 'Row unique identifier' },
       name: { type: 'string', required: true, description: 'Name' },
       value: { type: 'string', required: true, description: 'Value' },
+    },
+  },
+
+  [SECTION_TYPES.THICKNESS_CHART]: {
+    fields: {
+      id: { type: 'string', required: true, description: 'Unique identifier' },
+      type: { type: 'string', required: true, description: 'Section type' },
+      title: { type: 'string', required: true, description: 'Chart title' },
+      subtitle: { type: 'string', required: false, description: 'Chart subtitle' },
+      thicknesses: { type: 'array', required: true, description: 'Thickness values' },
+      description: { type: 'string', required: false, description: 'Chart rich text description' },
+    },
+    thicknessFields: {
+      id: { type: 'string', required: true, description: 'Thickness unique identifier' },
+      value: { type: 'string', required: true, description: 'Thickness value' },
+    },
+  },
+
+  [SECTION_TYPES.VIDEO_GALLERY]: {
+    fields: {
+      id: { type: 'string', required: true, description: 'Unique identifier' },
+      type: { type: 'string', required: true, description: 'Section type' },
+      title: { type: 'string', required: true, description: 'Gallery title' },
+      featuredVideo: { type: 'object', required: true, description: 'Featured video' },
+      videos: { type: 'array', required: false, description: 'Playlist videos' },
+    },
+    videoFields: {
+      id: { type: 'string', required: true, description: 'Video unique identifier' },
+      title: { type: 'string', required: true, description: 'Video title' },
+      url: { type: 'string', required: true, description: 'Video URL' },
+      author: { type: 'string', required: false, description: 'Video author' },
     },
   },
 }
@@ -210,6 +249,32 @@ export const validateSection = (section) => {
     })
   }
 
+  if (section.type === SECTION_TYPES.THICKNESS_CHART) {
+    if (!section.thicknesses || section.thicknesses.length === 0) {
+      errors.push('At least one thickness is required')
+    }
+
+    section.thicknesses?.forEach((thickness, index) => {
+      if (isBlank(thickness.value)) {
+        errors.push(`Thickness ${index + 1}: value is required`)
+      }
+    })
+  }
+
+  if (section.type === SECTION_TYPES.VIDEO_GALLERY) {
+    const featuredErrors = validateGalleryVideo(section.featuredVideo)
+    if (featuredErrors.length > 0) {
+      errors.push(`Featured video: ${featuredErrors.join(', ')}`)
+    }
+
+    section.videos?.forEach((video, index) => {
+      const videoErrors = validateGalleryVideo(video)
+      if (videoErrors.length > 0) {
+        errors.push(`Playlist video ${index + 1}: ${videoErrors.join(', ')}`)
+      }
+    })
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -272,6 +337,21 @@ export const validateAccordionItem = (item) => {
       }
     })
   }
+
+  return errors
+}
+
+export const validateGalleryVideo = (video) => {
+  const errors = []
+  const schema = SECTION_SCHEMAS[SECTION_TYPES.VIDEO_GALLERY].videoFields
+
+  if (!video) return ['video is required']
+
+  Object.entries(schema).forEach(([fieldName, fieldSchema]) => {
+    if (fieldSchema.required && isBlank(video[fieldName])) {
+      errors.push(`${fieldName} is required`)
+    }
+  })
 
   return errors
 }

@@ -59,7 +59,7 @@ export default function DividerSection({ section, onChange }) {
       <Divider />
 
       <TextField
-        label="Line width"
+        label="Line weight"
         type="number"
         min={MIN_WIDTH}
         max={MAX_WIDTH}

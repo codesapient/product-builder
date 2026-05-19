@@ -1,15 +1,18 @@
 // app/features/sections/sectionRegistry.js
 // ── Add a new section type here — nowhere else needs to change ────────────────
 
-import { ImageIcon, PlayCircleIcon, LayoutColumns2Icon, ImageWithTextOverlayIcon, MinusIcon, TextBlockIcon, ListBulletedIcon } from '@shopify/polaris-icons'
+import { ImageIcon, PlayCircleIcon, LayoutColumns2Icon, ImageWithTextOverlayIcon, MinusIcon, TextBlockIcon, ListBulletedIcon, LayoutRows2Icon, MeasurementSizeIcon, MediaReceiverIcon } from '@shopify/polaris-icons'
 import { SECTION_TYPES } from './types'
 import ImageSection from './components/ImageSection'
 import VideoSection from './components/VideoSection'
 import ImageColumnsSection from './components/ImageColumnsSection'
 import BannerWithTextSection from './components/BannerWithTextSection'
+import SpacerSection from './components/SpacerSection'
 import DividerSection from './components/DividerSection'
 import RichTextSection from './components/RichTextSection'
 import AccordionSection from './components/AccordionSection'
+import ThicknessChartSection from './components/ThicknessChartSection'
+import VideoGallerySection from './components/VideoGallerySection'
 
 const registry = {
   [SECTION_TYPES.IMAGE]: {
@@ -36,8 +39,14 @@ const registry = {
     tone: 'success',
     component: BannerWithTextSection,
   },
+  [SECTION_TYPES.SPACER]: {
+    label: 'Spacer',
+    icon: LayoutRows2Icon,
+    tone: 'subdued',
+    component: SpacerSection,
+  },
   [SECTION_TYPES.DIVIDER]: {
-    label: 'Spacer / divider',
+    label: 'Divider',
     icon: MinusIcon,
     tone: 'subdued',
     component: DividerSection,
@@ -53,6 +62,18 @@ const registry = {
     icon: ListBulletedIcon,
     tone: 'success',
     component: AccordionSection,
+  },
+  [SECTION_TYPES.THICKNESS_CHART]: {
+    label: 'Thickness chart',
+    icon: MeasurementSizeIcon,
+    tone: 'success',
+    component: ThicknessChartSection,
+  },
+  [SECTION_TYPES.VIDEO_GALLERY]: {
+    label: 'Video gallery',
+    icon: MediaReceiverIcon,
+    tone: 'caution',
+    component: VideoGallerySection,
   }
 }
 

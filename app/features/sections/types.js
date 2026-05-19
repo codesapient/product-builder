@@ -5,9 +5,12 @@ export const SECTION_TYPES = {
   TEXT_COLUMNS_WITH_IMAGES: 'text_columns_with_images',
   VIDEO: 'video',
   BANNER_WITH_TEXT: 'banner_with_text',
+  SPACER: 'spacer',
   DIVIDER: 'divider',
   RICH_TEXT: 'rich_text',
   ACCORDION: 'accordion',
+  THICKNESS_CHART: 'thickness_chart',
+  VIDEO_GALLERY: 'video_gallery',
 }
 
 export const IMAGE_LAYOUT = {
@@ -51,6 +54,12 @@ export const createBannerWithTextSection = () => ({
   borderRadius: 0,
 })
 
+export const createSpacerSection = () => ({
+  id: crypto.randomUUID(),
+  type: SECTION_TYPES.SPACER,
+  height: 40,
+})
+
 export const createDividerSection = () => ({
   id: crypto.randomUUID(),
   type: SECTION_TYPES.DIVIDER,
@@ -82,6 +91,35 @@ export const createAccordionSection = () => ({
       id: crypto.randomUUID(),
       heading: '',
       rows: [{ id: crypto.randomUUID(), name: '', value: '' }],
+    },
+  ],
+})
+
+export const createThicknessChartSection = () => ({
+  id: crypto.randomUUID(),
+  type: SECTION_TYPES.THICKNESS_CHART,
+  title: '',
+  subtitle: '',
+  thicknesses: [{ id: crypto.randomUUID(), value: '' }],
+  description: '',
+})
+
+export const createVideoGallerySection = () => ({
+  id: crypto.randomUUID(),
+  type: SECTION_TYPES.VIDEO_GALLERY,
+  title: '',
+  featuredVideo: {
+    id: crypto.randomUUID(),
+    title: '',
+    url: '',
+    author: '',
+  },
+  videos: [
+    {
+      id: crypto.randomUUID(),
+      title: '',
+      url: '',
+      author: '',
     },
   ],
 })
