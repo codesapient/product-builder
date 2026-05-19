@@ -15,9 +15,10 @@ import {
 import { ExternalIcon } from "@shopify/polaris-icons";
 
 const GET_PRODUCTS_WITH_SECTIONS = `#graphql
-  query GetProductsWithSections {
-    products(first: 50) {
+  query GetProductsWithSections($first: Int!, $after: String) {
+    products(first: $first, after: $after) {
       edges {
+        cursor
         node {
           id
           title
@@ -31,22 +32,48 @@ const GET_PRODUCTS_WITH_SECTIONS = `#graphql
           }
         }
       }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
 `;
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
+  const products = [];
+  let after = null;
+  let hasNextPage = true;
 
-  const response = await admin.graphql(GET_PRODUCTS_WITH_SECTIONS);
-  const { data } = await response.json();
+  while (hasNextPage) {
+    const response = await admin.graphql(GET_PRODUCTS_WITH_SECTIONS, {
+      variables: { first: 250, after },
+    });
+    const { data, errors } = await response.json();
 
-  const allProducts = data.products.edges.map(({ node }) => node);
+    if (errors?.length) {
+      throw new Response(errors.map((error) => error.message).join("\n"), {
+        status: 500,
+      });
+    }
+
+    products.push(...data.products.edges.map(({ node }) => node));
+    hasNextPage = data.products.pageInfo.hasNextPage;
+    after = data.products.pageInfo.endCursor;
+  }
 
   // only products that have sections saved
-  const productsWithSections = allProducts.filter(
-    (p) => p.metafield?.value != null
-  );
+  const productsWithSections = products.filter((product) => {
+    if (!product.metafield?.value) return false;
+
+    try {
+      const parsed = JSON.parse(product.metafield.value);
+      return parsed.sections?.length > 0;
+    } catch {
+      return false;
+    }
+  });
 
   return { products: productsWithSections };
 };

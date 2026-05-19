@@ -28,9 +28,23 @@ export const action = async ({ request, params }) => {
   const sectionsJson = formData.get('sections')
   const productGid = `gid://shopify/Product/${params.productId}`
 
-  await admin.graphql(SET_PRODUCT_SECTIONS, {
+  const response = await admin.graphql(SET_PRODUCT_SECTIONS, {
     variables: { productId: productGid, value: sectionsJson }
   })
+  const { data, errors } = await response.json()
+
+  if (errors?.length) {
+    throw new Response(errors.map((error) => error.message).join('\n'), {
+      status: 500,
+    })
+  }
+
+  const userErrors = data?.metafieldsSet?.userErrors ?? []
+  if (userErrors.length > 0) {
+    throw new Response(userErrors.map((error) => error.message).join('\n'), {
+      status: 400,
+    })
+  }
 
   return { success: true }
 }
