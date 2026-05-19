@@ -37,7 +37,7 @@ const registry = {
     component: BannerWithTextSection,
   },
   [SECTION_TYPES.DIVIDER]: {
-    label: 'Divider',
+    label: 'Spacer / divider',
     icon: MinusIcon,
     tone: 'subdued',
     component: DividerSection,

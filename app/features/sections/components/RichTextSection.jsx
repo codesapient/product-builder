@@ -14,6 +14,7 @@ import {
 import RichTextField from "../../../components/RichTextField";
 import { getRequiredFields } from "../schema";
 import { SECTION_TYPES } from "../types";
+import { LockIcon } from "@shopify/polaris-icons";
 
 const ALIGNMENT_OPTIONS = [
   { label: "Left", value: "left" },
@@ -26,8 +27,11 @@ const MAX_SPACING = 120;
 const MIN_RADIUS = 0;
 const MAX_RADIUS = 80;
 
-const clampNumber = (value, min, max, fallback) =>
-  Math.min(max, Math.max(min, Number(value) || fallback));
+const clampNumber = (value, min, max, fallback) => {
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue)) return fallback;
+  return Math.min(max, Math.max(min, numberValue));
+};
 
 export default function RichTextSection({
   section,
@@ -47,7 +51,7 @@ export default function RichTextSection({
     paddingTop === paddingRight &&
     paddingTop === paddingBottom &&
     paddingTop === paddingLeft;
-  const allPadding = syncedPadding ? paddingTop : 24;
+  const [paddingLocked, setPaddingLocked] = useState(syncedPadding);
 
   useEffect(() => {
     if (onValidate === 0) return;
@@ -68,6 +72,37 @@ export default function RichTextSection({
     }
 
     return "";
+  };
+
+  const handlePaddingLockToggle = () => {
+    if (paddingLocked) {
+      setPaddingLocked(false);
+      return;
+    }
+
+    setPaddingLocked(true);
+    onChange({
+      paddingTop,
+      paddingRight: paddingTop,
+      paddingBottom: paddingTop,
+      paddingLeft: paddingTop,
+    });
+  };
+
+  const handlePaddingChange = (fieldName, value) => {
+    const padding = clampNumber(value, MIN_SPACING, MAX_SPACING, MIN_SPACING);
+
+    if (paddingLocked) {
+      onChange({
+        paddingTop: padding,
+        paddingRight: padding,
+        paddingBottom: padding,
+        paddingLeft: padding,
+      });
+      return;
+    }
+
+    onChange({ [fieldName]: padding });
   };
 
   return (
@@ -150,70 +185,74 @@ export default function RichTextSection({
       />
 
       <BlockStack gap="300">
-        <Text variant="bodyMd" as="p">
-          Padding
-        </Text>
-        <RangeSlider
-          label="All sides"
-          min={MIN_SPACING}
-          max={MAX_SPACING}
-          step={1}
-          value={allPadding}
-          output
-          suffix={
-            <Text as="span" variant="bodySm">
-              {syncedPadding ? `${allPadding}px` : "Mixed"}
-            </Text>
-          }
-          onChange={(padding) =>
-            onChange({
-              paddingTop: padding,
-              paddingRight: padding,
-              paddingBottom: padding,
-              paddingLeft: padding,
-            })
-          }
-        />
-        <RangeSlider
-          label="Top"
-          min={MIN_SPACING}
-          max={MAX_SPACING}
-          step={1}
-          value={paddingTop}
-          output
-          suffix={<Text as="span" variant="bodySm">{paddingTop}px</Text>}
-          onChange={(paddingTop) => onChange({ paddingTop })}
-        />
-        <RangeSlider
-          label="Right"
-          min={MIN_SPACING}
-          max={MAX_SPACING}
-          step={1}
-          value={paddingRight}
-          output
-          suffix={<Text as="span" variant="bodySm">{paddingRight}px</Text>}
-          onChange={(paddingRight) => onChange({ paddingRight })}
-        />
-        <RangeSlider
-          label="Bottom"
-          min={MIN_SPACING}
-          max={MAX_SPACING}
-          step={1}
-          value={paddingBottom}
-          output
-          suffix={<Text as="span" variant="bodySm">{paddingBottom}px</Text>}
-          onChange={(paddingBottom) => onChange({ paddingBottom })}
-        />
-        <RangeSlider
-          label="Left"
-          min={MIN_SPACING}
-          max={MAX_SPACING}
-          step={1}
-          value={paddingLeft}
-          output
-          suffix={<Text as="span" variant="bodySm">{paddingLeft}px</Text>}
-          onChange={(paddingLeft) => onChange({ paddingLeft })}
-        />
+        <InlineStack align="space-between" blockAlign="center">
+          <Text variant="bodyMd" as="p">
+            Padding
+          </Text>
+          <Button
+            variant={paddingLocked ? "primary" : "secondary"}
+            icon={LockIcon}
+            pressed={paddingLocked}
+            onClick={handlePaddingLockToggle}
+            accessibilityLabel={
+              paddingLocked
+                ? "Unlock padding sides"
+                : "Lock padding sides together"
+            }
+          />
+        </InlineStack>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: "12px",
+          }}
+        >
+          <TextField
+            label="Top"
+            type="number"
+            min={MIN_SPACING}
+            max={MAX_SPACING}
+            step={1}
+            value={String(paddingTop)}
+            suffix="px"
+            autoComplete="off"
+            onChange={(value) => handlePaddingChange("paddingTop", value)}
+          />
+          <TextField
+            label="Right"
+            type="number"
+            min={MIN_SPACING}
+            max={MAX_SPACING}
+            step={1}
+            value={String(paddingRight)}
+            suffix="px"
+            autoComplete="off"
+            onChange={(value) => handlePaddingChange("paddingRight", value)}
+          />
+          <TextField
+            label="Bottom"
+            type="number"
+            min={MIN_SPACING}
+            max={MAX_SPACING}
+            step={1}
+            value={String(paddingBottom)}
+            suffix="px"
+            autoComplete="off"
+            onChange={(value) => handlePaddingChange("paddingBottom", value)}
+          />
+          <TextField
+            label="Left"
+            type="number"
+            min={MIN_SPACING}
+            max={MAX_SPACING}
+            step={1}
+            value={String(paddingLeft)}
+            suffix="px"
+            autoComplete="off"
+            onChange={(value) => handlePaddingChange("paddingLeft", value)}
+          />
+        </div>
       </BlockStack>
 
       <div
