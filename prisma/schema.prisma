@@ -32,3 +32,18 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
+
+model ProductSectionIndex {
+  id           String   @id
+  shop         String
+  productId    String
+  title        String
+  handle       String?
+  imageUrl     String?
+  sectionCount Int
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@unique([shop, productId])
+  @@index([shop])
+}
