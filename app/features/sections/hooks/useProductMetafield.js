@@ -10,6 +10,13 @@ export function useProductMetafield() {
   const isSuccess =
     fetcher.state === 'idle' && fetcher.data?.success === true
 
+  const saveSectionsError =
+    fetcher.state === 'idle' &&
+    fetcher.data?.success === false &&
+    typeof fetcher.data?.error === 'string'
+      ? fetcher.data.error
+      : null
+
   const saveSections = (sections) => {
     const formData = new FormData()
     formData.append('sections', serializeSections(sections))
@@ -20,5 +27,6 @@ export function useProductMetafield() {
     saveSections,
     isSaving,
     isSuccess,
+    saveSectionsError,
   }
 }

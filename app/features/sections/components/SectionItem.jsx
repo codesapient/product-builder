@@ -40,7 +40,11 @@ export default function SectionItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: section.id });
+  } = useSortable({
+    id: section.id,
+    // Snap into place after drop (no slide-to-slot animation)
+    transition: null,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),

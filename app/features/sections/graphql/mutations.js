@@ -21,6 +21,27 @@ export const SET_PRODUCT_SECTIONS = `#graphql
   }
 `
 
+export const SET_PRODUCT_GENERAL_SETTINGS = `#graphql
+  mutation SetProductGeneralSettings($productId: ID!, $value: String!) {
+    metafieldsSet(metafields: [{
+      ownerId: $productId
+      namespace: "custom"
+      key: "product_settings"
+      type: "json"
+      value: $value
+    }]) {
+      metafields {
+        id
+        value
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
 // ── Step 1: Request a staged upload target from Shopify ───────────────────────
 // Call this first. Shopify returns a signed URL + parameters to POST the file to.
 

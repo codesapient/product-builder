@@ -12,10 +12,21 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { Page, Layout, Card, Button, Banner, BlockStack, Icon, Text } from '@shopify/polaris'
-import { PlusIcon, ArrowLeftIcon, ViewIcon } from '@shopify/polaris-icons'
+import {
+  Page,
+  Layout,
+  Card,
+  Button,
+  Banner,
+  BlockStack,
+  Icon,
+  Text,
+  Collapsible,
+  InlineStack,
+} from '@shopify/polaris'
+import { ArrowLeftIcon, ViewIcon, ChevronDownIcon, ChevronUpIcon } from '@shopify/polaris-icons'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useSections } from '../hooks/useSections'
 import { useProductMetafield } from '../hooks/useProductMetafield'
 import { deserializeSections } from '../utils'
@@ -23,9 +34,12 @@ import { SECTION_TYPES } from '../types'
 import { getSectionMeta } from '../sectionRegistry'
 import { validateSection } from '../schema'
 import SectionItem from './SectionItem'
-import DraggableAddButton from './DraggableAddButton'
-import DropZoneIndicator from './DropZoneIndicator'
+import DraggableAddButton from './sectionListSettings/DraggableAddButton'
+import DropZoneIndicator from './sectionListSettings/DropZoneIndicator'
 import { useNavigate } from 'react-router'
+import SpecificationsSettings from '../../productSettings/components/SpecificationsSettings'
+import BadgeSettings from '../../productSettings/components/BadgeSettings'
+import ProductSettings from '../../productSettings/ProductSettings'
 
 // ── Declare which section types appear in the "Add section" panel ─────────────
 
@@ -46,7 +60,7 @@ export default function SectionsList({ product }) {
   const initialSections = deserializeSections(product?.metafield?.value)
   const { sections, addSection, addSectionAtIndex, removeSection, duplicateSection, updateSection, reorderSections } =
     useSections(initialSections)
-  const { saveSections, isSaving, isSuccess } = useProductMetafield()
+  const { saveSections, isSaving, isSuccess, saveSectionsError } = useProductMetafield()
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -59,6 +73,11 @@ export default function SectionsList({ product }) {
   const [showSuccess, setShowSuccess] = useState(false)
   const [activeId, setActiveId] = useState(null)
   const [showDropZone, setShowDropZone] = useState(null)
+  const [openLeftAccordion, setOpenLeftAccordion] = useState('productSettings')
+  const isProductSettingsOpen = openLeftAccordion === 'productSettings'
+  const isAddSectionOpen = openLeftAccordion === 'addSection'
+  const prevLeftAccordionRef = useRef(openLeftAccordion)
+  const [activePanel, setActivePanel] = useState('sections') // 'sections' | 'specifications'
 
   const producTitleRaw = product?.title?.trim()
   const productTitle = producTitleRaw?.length > 20 ? `${producTitleRaw.slice(0, 50)}...` : producTitleRaw
@@ -72,10 +91,12 @@ export default function SectionsList({ product }) {
 
 
   useEffect(() => {
-    if (isSuccess && validationErrors.length === 0) {
-      setShowSuccess(true)
-    }
+    if (isSuccess && validationErrors.length === 0) setShowSuccess(true)
   }, [isSuccess, validationErrors.length])
+
+  useEffect(() => {
+    if (saveSectionsError) setShowSuccess(false)
+  }, [saveSectionsError])
 
   const handleSave = useCallback(() => {
     setShowSuccess(false)
@@ -113,6 +134,31 @@ export default function SectionsList({ product }) {
     setShowSuccess(false)
     updateSection(id, changes)
   }, [updateSection])
+
+  const handleOpenSpecifications = useCallback(() => {
+    setActivePanel('specifications')
+  }, [])
+
+  const handleOpenSections = useCallback(() => {
+    setActivePanel('sections')
+  }, [])
+
+  useEffect(() => {
+    const prev = prevLeftAccordionRef.current
+    if (prev !== openLeftAccordion) {
+      if (openLeftAccordion === 'productSettings') handleOpenSpecifications()
+      else handleOpenSections()
+      prevLeftAccordionRef.current = openLeftAccordion
+    }
+  }, [openLeftAccordion, handleOpenSpecifications, handleOpenSections])
+
+  const activateProductSettings = useCallback(() => {
+    setOpenLeftAccordion((prev) => (prev === 'productSettings' ? prev : 'productSettings'))
+  }, [])
+
+  const activateAddSection = useCallback(() => {
+    setOpenLeftAccordion((prev) => (prev === 'addSection' ? prev : 'addSection'))
+  }, [])
 
   const handleAddSection = useCallback((type) => {
     setShowSuccess(false)
@@ -204,11 +250,6 @@ export default function SectionsList({ product }) {
         icon: ArrowLeftIcon,
         onAction: () => navigate('/app'),
       }}
-      primaryAction={{
-        content: 'Save sections',
-        loading: isSaving,
-        onAction: handleSave,
-      }}
       secondaryActions={[
         {
           content: 'View product',
@@ -221,17 +262,6 @@ export default function SectionsList({ product }) {
       ]}
     >
       <BlockStack gap="400">
-        {showSuccess && validationErrors.length === 0 && (
-          <Banner tone="success" title="Sections saved successfully!" />
-        )}
-        {validationErrors.length > 0 && (
-          <Banner tone="critical" title="Please fix validation errors:">
-            {validationErrors.map((error, idx) => (
-              <div key={idx}>{error}</div>
-            ))}
-          </Banner>
-        )}
-
         <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -240,84 +270,133 @@ export default function SectionsList({ product }) {
               onDragOver={handleDragOver}
               onDragCancel={handleDragCancel}
             >
+
+          {/* Top row — Product Settings + Add Section side by side */}
           <Layout>
-            {/* Left — Add section */}
-            <Layout.Section variant="oneThird">
+            <Layout.Section variant="oneHalf">
+              {/* Navbar */}
               <Card>
-                <BlockStack gap="300">
-                  <Text variant="headingSm" as="h2">Add section</Text>
-                  <Text variant="bodySm" tone="subdued">
-                    Choose a section type to add to this product page.
-                  </Text>
-
-                  {ADD_SECTION_MENU.map((type) => {
-                    const { label, icon: SectionIcon, tone } = getSectionMeta(type)
-                    return (
-                      // <Button
-                      //   key={type}
-                      //   fullWidth
-                      //   icon={PlusIcon}
-                      //   onClick={() => handleAddSection(type)}
-                      //   textAlign="left"
-                      // >
-                      //   <span style={{ paddingBlock: "4px", display: "block" }}>
-                      //     {label}
-                      //   </span>
-                      // </Button>
-                      <DraggableAddButton
-                        key={type}
-                        type={type}
-                        label={label}
-                        icon={SectionIcon}
-                        tone={tone}
-                        onClickAdd={handleAddSection}
-                      />
-                    )
-                  })}
-                </BlockStack>
-              </Card>
-            </Layout.Section>
-
-            {/* Right — Sections list */}
-            <Layout.Section>
-                <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
-                  <SortableContext
-                    items={sections.map((s) => s.id)}
-                    strategy={verticalListSortingStrategy}
+                <InlineStack gap="400">
+                  <Button
+                    variant={activePanel === 'specifications' ? 'primary' : 'plain'}
+                    onClick={handleOpenSpecifications}
                   >
-                    <BlockStack gap="300">
-                      {sections.length === 0 ? (
-                        <Card>
-                          <Text variant="bodySm" tone="subdued" alignment="center">
-                            No sections yet. Add one from the left panel.
-                          </Text>
-                        </Card>
-                      ) : (
-                        sections.map((section) => (
-                          <div key={section.id}>
-                            {showDropZone === section.id && activeId?.toString().startsWith('add-') && (
-                              <DropZoneIndicator />
-                            )}
-                            <SectionItem
-                              key={section.id}
-                              section={section}
-                              onUpdate={handleUpdateSection}
-                              onRemove={handleRemoveSection}
-                              onDuplicate={handleDuplicateSection}
-                              savedTrigger={savedTrigger}
-                              validationTrigger={showValidationTrigger}
-                              hasValidationError={invalidSectionIds.has(section.id)}
-                            />
-                          </div>
-                        ))
-                      )}
-                    </BlockStack>
-                  </SortableContext>
-                </div>
+                    Product Settings
+                  </Button>
+                  <Button
+                    variant={activePanel === 'sections' ? 'primary' : 'plain'}
+                    onClick={handleOpenSections}
+                  >
+                    Manage Sections
+                  </Button>
+                </InlineStack>
+              </Card>
             </Layout.Section>
           </Layout>
 
-          <DragOverlay>
+          {/* Bottom — Sections list / Specifications (full width) */}
+          {activePanel === 'specifications' ? (
+            <ProductSettings product={product} storeUrl={product.storeUrl} />
+          ) : (
+
+            <Layout>
+                <Layout.Section variant="oneThird">
+                  <Card>
+                    <BlockStack gap="300">
+                      <Text variant="headingSm" as="h2">Add a section</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        Choose a section type to add to this product page.
+                      </Text>
+                      {ADD_SECTION_MENU.map((type) => {
+                        const { label, icon: SectionIcon, tone } = getSectionMeta(type)
+                        return (
+                          <DraggableAddButton
+                            key={type}
+                            type={type}
+                            label={label}
+                            icon={SectionIcon}
+                            tone={tone}
+                            onClickAdd={handleAddSection}
+                          />
+                        )
+                      })}
+                    </BlockStack>
+                  </Card>
+                </Layout.Section>
+
+                <Layout.Section>
+                  <Card>
+
+                    <BlockStack gap="400">
+                      <InlineStack align="space-between" blockAlign="center" gap="400" wrap>
+                        <Text variant="headingSm" as="h2">Page sections</Text>
+                        <Button variant="primary" loading={isSaving} onClick={handleSave}>
+                          Save sections
+                        </Button>
+                      </InlineStack>
+
+                      {validationErrors.length > 0 && (
+                        <Banner tone="critical" title="Please fix validation errors:">
+                          {validationErrors.map((error, idx) => (
+                            <div key={idx}>{error}</div>
+                          ))}
+                        </Banner>
+                      )}
+                      {!isSaving &&
+                        saveSectionsError &&
+                        validationErrors.length === 0 && (
+                          <Banner tone="critical" title="Sections could not be saved">
+                            {saveSectionsError}
+                          </Banner>
+                        )}
+                      {showSuccess &&
+                        validationErrors.length === 0 &&
+                        !saveSectionsError && (
+                          <Banner tone="success" title="Sections saved successfully!" />
+                        )}
+
+                      <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 380px)' }}>
+                        <SortableContext
+                          items={sections.map((s) => s.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <BlockStack gap="300">
+                            {sections.length === 0 ? (
+                              <Card>
+                                <Text variant="bodySm" tone="subdued" alignment="center">
+                                  No sections yet. Add one from the panel above.
+                                </Text>
+                              </Card>
+                            ) : (
+                              sections.map((section) => (
+                                <div key={section.id}>
+                                  {showDropZone === section.id && activeId?.toString().startsWith('add-') && (
+                                    <DropZoneIndicator />
+                                  )}
+                                  <SectionItem
+                                    key={section.id}
+                                    section={section}
+                                    onUpdate={handleUpdateSection}
+                                    onRemove={handleRemoveSection}
+                                    onDuplicate={handleDuplicateSection}
+                                    savedTrigger={savedTrigger}
+                                    validationTrigger={showValidationTrigger}
+                                    hasValidationError={invalidSectionIds.has(section.id)}
+                                  />
+                                </div>
+                              ))
+                            )}
+                          </BlockStack>
+                        </SortableContext>
+                      </div>
+                    </BlockStack>
+                  </Card>
+                </Layout.Section>
+
+            </Layout>
+          )}
+
+          <DragOverlay dropAnimation={null}>
             {activeDragItem}
           </DragOverlay>
 
