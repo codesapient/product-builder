@@ -92,9 +92,38 @@ export function useSections(initialSections = []) {
     })
   }
 
+  const addSectionAtIndex = (type, index) => {
+    const newSection =
+      type === SECTION_TYPES.IMAGE
+        ? createImageSection()
+        : type === SECTION_TYPES.VIDEO
+        ? createVideoSection()
+        : type === SECTION_TYPES.BANNER_WITH_TEXT
+        ? createBannerWithTextSection()
+        : type === SECTION_TYPES.SPACER
+        ? createSpacerSection()
+        : type === SECTION_TYPES.DIVIDER
+        ? createDividerSection()
+        : type === SECTION_TYPES.RICH_TEXT
+        ? createRichTextSection()
+        : type === SECTION_TYPES.ACCORDION
+        ? createAccordionSection()
+        : type === SECTION_TYPES.THICKNESS_CHART
+        ? createThicknessChartSection()
+        : type === SECTION_TYPES.VIDEO_GALLERY
+        ? createVideoGallerySection()
+        : createImageColumnsSection()
+    setSections((prev) => {
+      const newSections = [...prev]
+      newSections.splice(index, 0, newSection)
+      return newSections
+    })
+  }
+
   return {
     sections,
     addSection,
+    addSectionAtIndex,
     removeSection,
     duplicateSection,
     updateSection,

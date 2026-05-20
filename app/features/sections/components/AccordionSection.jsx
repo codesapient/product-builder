@@ -23,6 +23,7 @@ import {
   InlineStack,
   Text,
   TextField,
+  Tooltip,
 } from "@shopify/polaris";
 import { DeleteIcon, PlusIcon } from "@shopify/polaris-icons";
 

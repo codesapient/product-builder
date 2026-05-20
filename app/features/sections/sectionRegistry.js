@@ -72,7 +72,7 @@ const registry = {
   [SECTION_TYPES.VIDEO_GALLERY]: {
     label: 'Video gallery',
     icon: MediaReceiverIcon,
-    tone: 'caution',
+    tone: 'success',
     component: VideoGallerySection,
   }
 }

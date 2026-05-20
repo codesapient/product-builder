@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, BlockStack, Collapsible } from "@shopify/polaris";
 
 import { getSectionMeta } from "../sectionRegistry";
+import { getSectionSubtitle } from "../utils";
 import DeleteSectionModal from "../../../components/DeleteSectionModal";
 import SortableAccordionHeader from "./SortableAccordionHeader";
 
@@ -55,12 +56,15 @@ export default function SectionItem({
     component: SectionComponent,
   } = getSectionMeta(section.type);
 
+  const subtitle = getSectionSubtitle(section);
+
   return (
     <div ref={setNodeRef} style={style}>
       <Card>
         <BlockStack gap="300">
           <SortableAccordionHeader
             title={label}
+            subtitle={subtitle}
             expanded={expanded}
             onToggle={() => setExpanded((v) => !v)}
             onDuplicate={() => onDuplicate(section.id)}

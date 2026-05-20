@@ -9,6 +9,7 @@ import {
 
 export default function SortableAccordionHeader({
   title,
+  subtitle,
   expanded,
   onToggle,
   onDuplicate,
@@ -24,6 +25,9 @@ export default function SortableAccordionHeader({
   duplicateAccessibilityLabel,
   deleteAccessibilityLabel,
 }) {
+  // Combine title and subtitle for display
+  const displayTitle = subtitle ? `${title} - ${subtitle}` : title;
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
       <div
@@ -68,7 +72,7 @@ export default function SortableAccordionHeader({
         >
           {leadingIcon && <Icon source={leadingIcon} tone={leadingIconTone} />}
           <Text variant="headingSm" as={titleAs} tone={titleTone}>
-            {title}
+            {displayTitle}
           </Text>
         </span>
       </button>
