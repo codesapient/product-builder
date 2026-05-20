@@ -149,7 +149,6 @@ export const SECTION_SCHEMAS = {
       id: { type: 'string', required: true, description: 'Unique identifier' },
       type: { type: 'string', required: true, description: 'Section type' },
       title: { type: 'string', required: true, description: 'Gallery title' },
-      featuredVideo: { type: 'object', required: true, description: 'Featured video' },
       videos: { type: 'array', required: false, description: 'Playlist videos' },
     },
     videoFields: {
@@ -262,11 +261,6 @@ export const validateSection = (section) => {
   }
 
   if (section.type === SECTION_TYPES.VIDEO_GALLERY) {
-    const featuredErrors = validateGalleryVideo(section.featuredVideo)
-    if (featuredErrors.length > 0) {
-      errors.push(`Featured video: ${featuredErrors.join(', ')}`)
-    }
-
     section.videos?.forEach((video, index) => {
       const videoErrors = validateGalleryVideo(video)
       if (videoErrors.length > 0) {

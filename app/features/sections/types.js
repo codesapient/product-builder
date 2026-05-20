@@ -108,12 +108,6 @@ export const createVideoGallerySection = () => ({
   id: crypto.randomUUID(),
   type: SECTION_TYPES.VIDEO_GALLERY,
   title: '',
-  featuredVideo: {
-    id: crypto.randomUUID(),
-    title: '',
-    url: '',
-    author: '',
-  },
   videos: [
     {
       id: crypto.randomUUID(),

@@ -1,4 +1,4 @@
-import { Button, Icon, Text } from "@shopify/polaris";
+import { Button, Icon, Text, Tooltip } from "@shopify/polaris";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -81,20 +81,24 @@ export default function SortableAccordionHeader({
           accessibilityLabel={toggleAccessibilityLabel}
         />
         {onDuplicate && (
+          <Tooltip content="Duplicate">
+            <Button
+              variant="plain"
+              icon={DuplicateIcon}
+              onClick={onDuplicate}
+              accessibilityLabel={duplicateAccessibilityLabel}
+            />
+          </Tooltip>
+        )}
+        <Tooltip content="Delete">
           <Button
             variant="plain"
-            icon={DuplicateIcon}
-            onClick={onDuplicate}
-            accessibilityLabel={duplicateAccessibilityLabel}
+            tone="critical"
+            icon={DeleteIcon}
+            onClick={onDelete}
+            accessibilityLabel={deleteAccessibilityLabel}
           />
-        )}
-        <Button
-          variant="plain"
-          tone="critical"
-          icon={DeleteIcon}
-          onClick={onDelete}
-          accessibilityLabel={deleteAccessibilityLabel}
-        />
+        </Tooltip>
       </div>
     </div>
   );

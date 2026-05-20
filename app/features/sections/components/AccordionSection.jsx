@@ -180,14 +180,16 @@ function AccordionItemEditor({
                               : ""
                           }
                         />
-                        <Button
-                          variant="plain"
-                          tone="critical"
-                          icon={DeleteIcon}
-                          onClick={() => removeRow(row.id)}
-                          disabled={rows.length <= 1}
-                          accessibilityLabel={`Remove row ${index + 1}`}
-                        />
+                        <Tooltip content="Delete">
+                          <Button
+                            variant="plain"
+                            tone="critical"
+                            icon={DeleteIcon}
+                            onClick={() => removeRow(row.id)}
+                            disabled={rows.length <= 1}
+                            accessibilityLabel={`Remove row ${index + 1}`}
+                          />
+                        </Tooltip>
                       </div>
                     );
                   })}

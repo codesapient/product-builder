@@ -63,6 +63,7 @@ function ImageColumnEditor({
   onToggle,
   onChange,
   onRemove,
+  onDuplicate,
   validationError,
 }) {
   const {
@@ -94,6 +95,7 @@ function ImageColumnEditor({
             title={displayTitle}
             expanded={isOpen}
             onToggle={onToggle}
+            onDuplicate={() => onDuplicate(column.id)}
             onDelete={() => onRemove(column.id)}
             dragAttributes={attributes}
             dragListeners={listeners}
@@ -101,6 +103,7 @@ function ImageColumnEditor({
             titleAs="h4"
             titleTone="subdued"
             toggleAccessibilityLabel={`Toggle ${displayTitle}`}
+            duplicateAccessibilityLabel={`Duplicate ${displayTitle}`}
             deleteAccessibilityLabel={`Remove ${displayTitle}`}
           />
 
@@ -232,6 +235,27 @@ export default function ImageColumnsSection({ section, onChange, onSaved, onVali
     }
   };
 
+  const handleDuplicateColumn = (id) => {
+    if (columns.length >= MAX_IMAGE_COLUMNS) return;
+
+    const columnIndex = columns.findIndex((column) => column.id === id);
+    if (columnIndex === -1) return;
+
+    const duplicate = {
+      ...columns[columnIndex],
+      id: crypto.randomUUID(),
+    };
+
+    onChange({
+      columns: [
+        ...columns.slice(0, columnIndex + 1),
+        duplicate,
+        ...columns.slice(columnIndex + 1),
+      ],
+    });
+    setOpenColumnId(duplicate.id);
+  };
+
   const handleColumnChange = (id, changes) => {
     const updatedColumn = {
       ...columns.find((column) => column.id === id),
@@ -351,6 +375,7 @@ export default function ImageColumnsSection({ section, onChange, onSaved, onVali
                 onToggle={() => handleToggle(column.id)}
                 onChange={handleColumnChange}
                 onRemove={handleRemoveColumn}
+                onDuplicate={handleDuplicateColumn}
                 validationError={validationErrorColumnIds.has(column.id)}
               />
             ))}

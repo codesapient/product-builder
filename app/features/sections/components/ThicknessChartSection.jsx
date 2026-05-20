@@ -1,13 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   BlockStack,
   Button,
   Divider,
+  Icon,
   InlineStack,
   Text,
   TextField,
+  Tooltip,
 } from "@shopify/polaris";
-import { DeleteIcon, PlusIcon } from "@shopify/polaris-icons";
+import {
+  DeleteIcon,
+  DragHandleIcon,
+  DuplicateIcon,
+  PlusIcon,
+} from "@shopify/polaris-icons";
 
 import RichTextField from "../../../components/RichTextField";
 import { getRequiredFields } from "../schema";
@@ -19,6 +40,85 @@ const createThickness = () => ({
   id: crypto.randomUUID(),
   value: "",
 });
+
+function SortableThicknessRow({
+  thickness,
+  thicknessIndex,
+  validationError,
+  canRemove,
+  canDuplicate,
+  onChange,
+  onDuplicate,
+  onRemove,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: thickness.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    display: "grid",
+    gridTemplateColumns: "auto minmax(0, 1fr) auto auto",
+    gap: "12px",
+    alignItems: "start",
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <div
+        {...attributes}
+        {...listeners}
+        style={{
+          cursor: "grab",
+          display: "flex",
+          alignItems: "center",
+          minHeight: "32px",
+        }}
+      >
+        <Icon source={DragHandleIcon} tone="subdued" />
+      </div>
+      <TextField
+        label={`Thickness ${thicknessIndex + 1}`}
+        labelHidden
+        value={thickness.value || ""}
+        onChange={(value) => onChange(thickness.id, value)}
+        placeholder="1/4"
+        autoComplete="off"
+        error={
+          validationError && !thickness.value?.trim?.()
+            ? "Thickness is required"
+            : ""
+        }
+      />
+      <Tooltip content="Duplicate">
+        <Button
+          variant="plain"
+          icon={DuplicateIcon}
+          onClick={() => onDuplicate(thickness.id)}
+          disabled={!canDuplicate}
+          accessibilityLabel={`Duplicate thickness ${thicknessIndex + 1}`}
+        />
+      </Tooltip>
+      <Tooltip content="Delete">
+        <Button
+          variant="plain"
+          tone="critical"
+          icon={DeleteIcon}
+          onClick={() => onRemove(thickness.id)}
+          disabled={!canRemove}
+          accessibilityLabel={`Remove thickness ${thicknessIndex + 1}`}
+        />
+      </Tooltip>
+    </div>
+  );
+}
 
 export default function ThicknessChartSection({
   section,
@@ -32,6 +132,7 @@ export default function ThicknessChartSection({
     () => section.thicknesses ?? [],
     [section.thicknesses],
   );
+  const sensors = useSensors(useSensor(PointerSensor));
 
   useEffect(() => {
     if (onValidate === 0) return;
@@ -65,11 +166,47 @@ export default function ThicknessChartSection({
     onChange({ thicknesses: [...thicknesses, createThickness()] });
   };
 
+  const duplicateThickness = (id) => {
+    if (thicknesses.length >= MAX_THICKNESSES) return;
+
+    const thicknessIndex = thicknesses.findIndex(
+      (thickness) => thickness.id === id,
+    );
+    if (thicknessIndex === -1) return;
+
+    const duplicate = {
+      ...thicknesses[thicknessIndex],
+      id: crypto.randomUUID(),
+    };
+
+    onChange({
+      thicknesses: [
+        ...thicknesses.slice(0, thicknessIndex + 1),
+        duplicate,
+        ...thicknesses.slice(thicknessIndex + 1),
+      ],
+    });
+  };
+
   const removeThickness = (id) => {
     if (thicknesses.length <= 1) return;
     onChange({
       thicknesses: thicknesses.filter((thickness) => thickness.id !== id),
     });
+  };
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = thicknesses.findIndex(
+      (thickness) => thickness.id === active.id,
+    );
+    const newIndex = thicknesses.findIndex(
+      (thickness) => thickness.id === over.id,
+    );
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    onChange({ thicknesses: arrayMove(thicknesses, oldIndex, newIndex) });
   };
 
   return (
@@ -98,39 +235,34 @@ export default function ThicknessChartSection({
           Thicknesses
         </Text>
 
-        {thicknesses.map((thickness, index) => (
-          <div
-            key={thickness.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) auto",
-              gap: "12px",
-              alignItems: "start",
-            }}
+        {thicknesses.length > 0 && (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <TextField
-              label={`Thickness ${index + 1}`}
-              labelHidden
-              value={thickness.value || ""}
-              onChange={(value) => updateThickness(thickness.id, value)}
-              placeholder="1/4"
-              autoComplete="off"
-              error={
-                validationError && !thickness.value?.trim?.()
-                  ? "Thickness is required"
-                  : ""
-              }
-            />
-            <Button
-              variant="plain"
-              tone="critical"
-              icon={DeleteIcon}
-              onClick={() => removeThickness(thickness.id)}
-              disabled={thicknesses.length <= 1}
-              accessibilityLabel={`Remove thickness ${index + 1}`}
-            />
-          </div>
-        ))}
+            <SortableContext
+              items={thicknesses.map((thickness) => thickness.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <BlockStack gap="200">
+                {thicknesses.map((thickness, index) => (
+                  <SortableThicknessRow
+                    key={thickness.id}
+                    thickness={thickness}
+                    thicknessIndex={index}
+                    validationError={validationError}
+                    canRemove={thicknesses.length > 1}
+                    canDuplicate={thicknesses.length < MAX_THICKNESSES}
+                    onChange={updateThickness}
+                    onDuplicate={duplicateThickness}
+                    onRemove={removeThickness}
+                  />
+                ))}
+              </BlockStack>
+            </SortableContext>
+          </DndContext>
+        )}
 
         <InlineStack align="start" blockAlign="center" gap="300">
           <Button

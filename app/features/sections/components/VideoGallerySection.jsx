@@ -89,6 +89,7 @@ function PlaylistVideoEditor({
   onToggle,
   onChange,
   onRemove,
+  onDuplicate,
   validationError,
 }) {
   const {
@@ -118,6 +119,7 @@ function PlaylistVideoEditor({
             title={displayTitle}
             expanded={isOpen}
             onToggle={onToggle}
+            onDuplicate={() => onDuplicate(video.id)}
             onDelete={() => onRemove(video.id)}
             dragAttributes={attributes}
             dragListeners={listeners}
@@ -125,6 +127,7 @@ function PlaylistVideoEditor({
             titleAs="h4"
             titleTone="subdued"
             toggleAccessibilityLabel={`Toggle ${displayTitle}`}
+            duplicateAccessibilityLabel={`Duplicate ${displayTitle}`}
             deleteAccessibilityLabel={`Remove ${displayTitle}`}
           />
 
@@ -153,7 +156,6 @@ export default function VideoGallerySection({
   onValidate,
 }) {
   const [titleError, setTitleError] = useState("");
-  const [featuredValidationError, setFeaturedValidationError] = useState(false);
   const [openVideoId, setOpenVideoId] = useState(
     () => section.videos?.[0]?.id ?? null,
   );
@@ -161,7 +163,6 @@ export default function VideoGallerySection({
     new Set(),
   );
   const videos = useMemo(() => section.videos ?? [], [section.videos]);
-  const featuredVideo = section.featuredVideo ?? createGalleryVideo();
   const sensors = useSensors(useSensor(PointerSensor));
 
   useEffect(() => {
@@ -173,7 +174,6 @@ export default function VideoGallerySection({
         ? "Title is required"
         : "",
     );
-    setFeaturedValidationError(validateGalleryVideo(featuredVideo).length > 0);
 
     const errorVideoIds = new Set();
     videos.forEach((video) => {
@@ -187,27 +187,35 @@ export default function VideoGallerySection({
       const firstErrorVideo = videos.find((video) => errorVideoIds.has(video.id));
       if (firstErrorVideo) setOpenVideoId(firstErrorVideo.id);
     }
-  }, [onValidate, featuredVideo, section.title, videos]);
+  }, [onValidate, section.title, videos]);
 
   useEffect(() => {
     if (onSaved === 0) return;
 
     setTitleError("");
-    setFeaturedValidationError(false);
     setOpenVideoId(null);
     setValidationErrorVideoIds(new Set());
   }, [onSaved]);
 
-  const handleFeaturedChange = (changes) => {
-    const nextFeaturedVideo = { ...featuredVideo, ...changes };
-    onChange({ featuredVideo: nextFeaturedVideo });
-    if (validateGalleryVideo(nextFeaturedVideo).length === 0) {
-      setFeaturedValidationError(false);
-    }
-  };
-
   const handleAddVideo = () => {
     if (videos.length >= MAX_PLAYLIST_VIDEOS) return;
+
+    const invalidVideoIds = new Set();
+    videos.forEach((video) => {
+      if (validateGalleryVideo(video).length > 0) {
+        invalidVideoIds.add(video.id);
+      }
+    });
+
+    if (invalidVideoIds.size > 0) {
+      setValidationErrorVideoIds(invalidVideoIds);
+      const firstInvalidVideo = videos.find((video) =>
+        invalidVideoIds.has(video.id),
+      );
+      if (firstInvalidVideo) setOpenVideoId(firstInvalidVideo.id);
+      return;
+    }
+
     const newVideo = createGalleryVideo();
     onChange({ videos: [...videos, newVideo] });
     setOpenVideoId(newVideo.id);
@@ -224,6 +232,27 @@ export default function VideoGallerySection({
     if (openVideoId === id) {
       setOpenVideoId(remaining[remaining.length - 1]?.id ?? null);
     }
+  };
+
+  const handleDuplicateVideo = (id) => {
+    if (videos.length >= MAX_PLAYLIST_VIDEOS) return;
+
+    const videoIndex = videos.findIndex((video) => video.id === id);
+    if (videoIndex === -1) return;
+
+    const duplicate = {
+      ...videos[videoIndex],
+      id: crypto.randomUUID(),
+    };
+
+    onChange({
+      videos: [
+        ...videos.slice(0, videoIndex + 1),
+        duplicate,
+        ...videos.slice(videoIndex + 1),
+      ],
+    });
+    setOpenVideoId(duplicate.id);
   };
 
   const handleVideoChange = (id, changes) => {
@@ -276,20 +305,6 @@ export default function VideoGallerySection({
         error={titleError}
       />
 
-      <Card>
-        <BlockStack gap="300">
-          <Text variant="headingSm" as="h4">
-            Featured video
-          </Text>
-          <GalleryVideoFields
-            video={featuredVideo}
-            validationError={featuredValidationError}
-            onChange={handleFeaturedChange}
-            titleLabel="Featured video title"
-          />
-        </BlockStack>
-      </Card>
-
       <BlockStack gap="300">
         <InlineStack align="space-between" blockAlign="center">
           <Text variant="headingSm" as="h4">
@@ -324,6 +339,7 @@ export default function VideoGallerySection({
                     }
                     onChange={handleVideoChange}
                     onRemove={handleRemoveVideo}
+                    onDuplicate={handleDuplicateVideo}
                     validationError={validationErrorVideoIds.has(video.id)}
                   />
                 ))}
@@ -339,7 +355,7 @@ export default function VideoGallerySection({
             disabled={videos.length >= MAX_PLAYLIST_VIDEOS}
             size="slim"
           >
-            Add playlist video
+            Add new video
           </Button>
         </InlineStack>
       </BlockStack>
