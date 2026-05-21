@@ -51,7 +51,7 @@ export const createBannerWithTextSection = () => ({
   heading: '',
   imageUrl: '',
   alignment: 'center',
-  imageWidth: 100,
+  imageSize: '',
   imageBorderRadius: 0,
 })
 

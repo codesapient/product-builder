@@ -8,6 +8,7 @@ import {
   RangeSlider,
   Text,
   TextField,
+  Tooltip
 } from "@shopify/polaris";
 
 import { getRequiredFields } from "../schema";
@@ -19,6 +20,11 @@ const ALIGNMENT_OPTIONS = [
   { label: "Center", value: "center" },
   { label: "Right", value: "right" },
 ];
+
+const IMAGE_SIZE_OPTIONS = [
+  { label: "Fill – covers the full area", value: "cover" },
+  { label: "Fit – shows the entire image", value: "contain" },
+]
 
 const MIN_RADIUS = 0;
 const MAX_RADIUS = 80;
@@ -82,47 +88,50 @@ export default function BannerWithTextSection({
         error={getFieldError("imageUrl", "Background image")}
       />
 
-      <InlineGrid columns={2} gap="400" alignItems="center">
-        <TextField
-          label="Image width"
-          type="number"
-          value={section.imageWidth?.toString() || ""}
-          onChange={(value) =>
-            onChange({
-              imageWidth: Number(value) || 100,
-            })
-          }
-          placeholder="400"
-          autoComplete="off"
-          suffix="%"
-        />
-        <RangeSlider
-          label="Image Border radius"
-          min={MIN_RADIUS}
-          max={MAX_RADIUS}
-          step={1}
-          value={imageBorderRadius}
-          output
-          suffix={<Text as="span" variant="bodySm">{imageBorderRadius}px</Text>}
-          onChange={(imageBorderRadius) => onChange({ imageBorderRadius })}
-        />
-      </InlineGrid>
-
       <BlockStack gap="200">
-        <Text variant="bodyMd" as="p">
-          Alignment
-        </Text>
-        <ButtonGroup variant="segmented">
-          {ALIGNMENT_OPTIONS.map(({ label, value }) => (
-            <Button
-              key={value}
-              pressed={(section.alignment || "center") === value}
-              onClick={() => onChange({ alignment: value })}
-            >
-              {label}
-            </Button>
-          ))}
-        </ButtonGroup>
+        <InlineGrid columns={3} gap="400" alignItems="center">
+          <BlockStack gap="200">
+            <Text variant="bodyMd" as="p">Image Size</Text>
+            <ButtonGroup variant="segmented">
+              {IMAGE_SIZE_OPTIONS.map(({ label, value }) => (
+                <Tooltip key={value} content={label}>
+                  <Button
+                    pressed={(section.imageSize || "cover") === value}
+                    onClick={() => onChange({ imageSize: value })}
+                  >
+                    {value === "cover" ? "Fill" : "Fit"}
+                  </Button>
+                </Tooltip>
+              ))}
+            </ButtonGroup>
+          </BlockStack>
+
+          <BlockStack gap="200" align="start">
+            <Text variant="bodyMd" as="p">Alignment</Text>
+            <ButtonGroup variant="segmented">
+              {ALIGNMENT_OPTIONS.map(({ label, value }) => (
+                <Button
+                  key={value}
+                  pressed={(section.alignment || "center") === value}
+                  onClick={() => onChange({ alignment: value })}
+                >
+                  {label}
+                </Button>
+              ))}
+            </ButtonGroup>
+          </BlockStack>
+
+          <RangeSlider
+            label="Image Border radius"
+            min={MIN_RADIUS}
+            max={MAX_RADIUS}
+            step={1}
+            value={imageBorderRadius}
+            output
+            suffix={<Text as="span" variant="bodySm">{imageBorderRadius}px</Text>}
+            onChange={(imageBorderRadius) => onChange({ imageBorderRadius })}
+          />
+        </InlineGrid>
       </BlockStack>
 
     </BlockStack>

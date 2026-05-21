@@ -5,6 +5,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { useEffect } from 'react'
 import { Text } from '@shopify/polaris'
+import { Mark, mergeAttributes } from '@tiptap/core'
 
 const ToolbarButton = ({ onClick, active, title, children }) => (
   <button
@@ -34,12 +35,23 @@ const Divider = () => (
   <div style={{ width: '1px', background: '#c9cccf', margin: '2px 4px' }} />
 )
 
+const Small = Mark.create({
+  name: 'small',
+  parseHTML() {
+    return [{ tag: 'small' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['small', mergeAttributes(HTMLAttributes), 0]
+  },
+})
+
 export default function RichTextField({ label, value, onChange, toolBar }) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
       TextStyle,
+      Small,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
     ],
     content: value || '',
@@ -129,6 +141,13 @@ export default function RichTextField({ label, value, onChange, toolBar }) {
           </ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
             <s>S</s>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleMark('small').run()}
+            active={editor.isActive('small')}
+            title="Small"
+          >
+            <small>S</small>
           </ToolbarButton>
 
           <Divider />

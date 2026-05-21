@@ -71,7 +71,7 @@ export const SECTION_SCHEMAS = {
       imageUrl: { type: 'string', required: true, description: 'Banner background image URL' },
       heading: { type: 'string', required: false, description: 'Banner heading' },
       alignment: { type: 'string', required: false, description: 'Text alignment (left/center/right)' },
-      imageWidth: { type: 'number', required: false, description: 'Image width in percentage' },
+      imageSize: { type: 'string', required: false, description: 'Image size (cover/fill)' },
       imageBorderRadius: { type: 'number', required: false, description: 'Banner border radius in pixels' },
     },
   },
