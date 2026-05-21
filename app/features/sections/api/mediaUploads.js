@@ -16,9 +16,10 @@ export async function uploadImage(file) {
   return payload.url;
 }
 
-export async function fetchImageFiles(query = "") {
+export async function fetchImageFiles(query = "", cursor = null) {
   const params = new URLSearchParams();
   if (query.trim()) params.set("query", query.trim());
+  if (cursor) params.set("after", cursor);
 
   const res = await fetch(`/api/files?${params.toString()}`);
   const payload = await res.json().catch(() => ({}));
@@ -27,5 +28,10 @@ export async function fetchImageFiles(query = "") {
     throw new Error(payload.error || "Unable to load files");
   }
 
-  return payload.files ?? [];
+  // Now returns object instead of array
+  return {
+    files: payload.files ?? [],
+    hasNextPage: payload.hasNextPage ?? false,
+    nextCursor: payload.nextCursor ?? null,
+  };
 }

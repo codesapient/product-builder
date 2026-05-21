@@ -52,6 +52,10 @@ export default function MediaPickerModal({
   const [urlPopoverActive, setUrlPopoverActive] = useState(false);
   const [mediaUrl, setMediaUrl] = useState("");
   const [error, setError] = useState(null);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef(null);
 
   const initialAsset = useMemo(() => {
     if (!initialUrl) return null;
@@ -91,29 +95,28 @@ export default function MediaPickerModal({
   useEffect(() => {
     if (!open) return;
 
-    let active = true;
-    const delay = searchValue.trim() ? 400 : 0;
+    // Reset on new search or modal open
+    setExistingAssets([]);
+    setNextCursor(null);
+    setHasNextPage(false);
 
+    let active = true;
     const timer = setTimeout(() => {
       setLoadingFiles(true);
       setError(null);
 
-      fetchImageFiles(searchValue.trim())
-        .then((files) => {
-          if (active) setExistingAssets(files);
+      fetchImageFiles(searchValue.trim(), null)
+        .then(({ files, hasNextPage: more, nextCursor: cursor }) => {
+          if (!active) return;
+          setExistingAssets(files);
+          setHasNextPage(more);
+          setNextCursor(cursor);
         })
-        .catch((filesError) => {
-          if (active) setError(filesError.message);
-        })
-        .finally(() => {
-          if (active) setLoadingFiles(false);
-        });
-    }, delay);
+        .catch((err) => { if (active) setError(err.message); })
+        .finally(() => { if (active) setLoadingFiles(false); });
+    }, searchValue.trim() ? 400 : 0);
 
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
+    return () => { active = false; clearTimeout(timer); };
   }, [open, searchValue]);
 
   useEffect(() => {
@@ -123,6 +126,31 @@ export default function MediaPickerModal({
       });
     };
   }, []);
+
+  const loadMore = useCallback(() => {
+    if (!hasNextPage || loadingMore || loadingFiles) return;
+
+    setLoadingMore(true);
+    fetchImageFiles(searchValue.trim(), nextCursor)
+      .then(({ files, hasNextPage: more, nextCursor: cursor }) => {
+        setExistingAssets((prev) => [...prev, ...files]);
+        setHasNextPage(more);
+        setNextCursor(cursor);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoadingMore(false));
+  }, [hasNextPage, loadingMore, loadingFiles, searchValue, nextCursor]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   const handleDrop = useCallback((_dropped, accepted) => {
     setFileDialogOpen(false);
@@ -306,11 +334,13 @@ export default function MediaPickerModal({
             onSelect={setSelectedAsset}
           />
 
-          {loadingFiles && (
+          {hasNextPage && <div ref={sentinelRef} style={{ height: "1px" }} />}
+
+          {(loadingFiles || loadingMore) && (
             <InlineStack gap="200" blockAlign="center">
               <Spinner size="small" />
               <Text variant="bodySm" tone="subdued">
-                Loading Shopify files...
+                {loadingMore ? "Loading more..." : "Loading Shopify files..."}
               </Text>
             </InlineStack>
           )}

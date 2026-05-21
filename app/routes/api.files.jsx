@@ -10,11 +10,13 @@ export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const url = new URL(request.url);
   const search = url.searchParams.get("query")?.trim();
+  const after = url.searchParams.get("after") || null;  // NEW
 
   const filesRes = await admin.graphql(FILES_QUERY, {
     variables: {
       first: 50,
       query: search ? `filename:*${search}*` : null,
+      after,  // NEW
     },
   });
 
@@ -24,8 +26,11 @@ export const loader = async ({ request }) => {
     return Response.json({ error: errors[0].message }, { status: 422 });
   }
 
-  const files = data?.files?.edges
-    ?.map(({ node }) => {
+  const edges = data?.files?.edges ?? [];
+  const pageInfo = data?.files?.pageInfo ?? {};
+
+  const files = edges
+    .map(({ node }) => {
       const imageUrl = node.image?.url;
       if (!imageUrl) return null;
 
@@ -40,5 +45,9 @@ export const loader = async ({ request }) => {
     })
     .filter(Boolean);
 
-  return Response.json({ files: files ?? [] });
+  return Response.json({
+    files,
+    hasNextPage: pageInfo.hasNextPage ?? false,
+    nextCursor: pageInfo.endCursor ?? null,
+  });
 };

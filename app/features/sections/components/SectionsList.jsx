@@ -246,9 +246,15 @@ export default function SectionsList({ product }) {
     <Page
       title={productTitle}
       backAction={{
-        content: 'Home',
-        icon: ArrowLeftIcon,
-        onAction: () => navigate('/app'),
+        content: 'Products',
+        onAction: () => {
+          const productId = product?.id?.replace('gid://shopify/Product/', '')
+          const storeHandle = product?.storeUrl
+            ?.replace('https://', '')
+            .replace('.myshopify.com', '')
+            .replace(/\/$/, '')
+          open(`https://admin.shopify.com/store/${storeHandle}/products/${productId}`, '_top')
+        },
       }}
       secondaryActions={[
         {

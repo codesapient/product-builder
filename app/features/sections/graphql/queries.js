@@ -24,8 +24,12 @@ export const GET_PRODUCT_WITH_SECTIONS = `#graphql
 `;
 
 export const FILES_QUERY = `#graphql
-  query Files($first: Int!, $query: String) {
-    files(first: $first, query: $query, sortKey: CREATED_AT, reverse: true) {
+  query Files($first: Int!, $query: String, $after: String) {
+    files(first: $first, query: $query, after: $after, sortKey: CREATED_AT, reverse: true) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       edges {
         node {
           id
