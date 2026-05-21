@@ -249,10 +249,8 @@ export default function SectionsList({ product }) {
         content: 'Products',
         onAction: () => {
           const productId = product?.id?.replace('gid://shopify/Product/', '')
-          const storeHandle = product?.storeUrl
-            ?.replace('https://', '')
-            .replace('.myshopify.com', '')
-            .replace(/\/$/, '')
+          const match = window.location.href.match(/admin\.shopify\.com\/store\/([^/]+)/)
+          const storeHandle = match?.[1]
           open(`https://admin.shopify.com/store/${storeHandle}/products/${productId}`, '_top')
         },
       }}
