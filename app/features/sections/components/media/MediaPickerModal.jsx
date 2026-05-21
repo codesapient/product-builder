@@ -79,7 +79,9 @@ export default function MediaPickerModal({
   }, [existingAssets, initialAsset, uploadedAssets]);
 
   const filteredAssets = assets.filter((asset) =>
-    asset.name.toLowerCase().includes(searchValue.toLowerCase()),
+    asset.source !== "existing"
+      ? asset.name.toLowerCase().includes(searchValue.toLowerCase())
+      : true,
   );
 
   useEffect(() => {
@@ -90,24 +92,29 @@ export default function MediaPickerModal({
     if (!open) return;
 
     let active = true;
-    setLoadingFiles(true);
-    setError(null);
+    const delay = searchValue.trim() ? 400 : 0;
 
-    fetchImageFiles()
-      .then((files) => {
-        if (active) setExistingAssets(files);
-      })
-      .catch((filesError) => {
-        if (active) setError(filesError.message);
-      })
-      .finally(() => {
-        if (active) setLoadingFiles(false);
-      });
+    const timer = setTimeout(() => {
+      setLoadingFiles(true);
+      setError(null);
+
+      fetchImageFiles(searchValue.trim())
+        .then((files) => {
+          if (active) setExistingAssets(files);
+        })
+        .catch((filesError) => {
+          if (active) setError(filesError.message);
+        })
+        .finally(() => {
+          if (active) setLoadingFiles(false);
+        });
+    }, delay);
 
     return () => {
       active = false;
+      clearTimeout(timer);
     };
-  }, [open]);
+  }, [open, searchValue]);
 
   useEffect(() => {
     return () => {
@@ -373,9 +380,7 @@ function MediaTile({ asset, selected, onSelect }) {
               position: "absolute",
               top: "6px",
               left: "6px",
-              background: "white",
               borderRadius: "4px",
-              boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.18)",
             }}
           >
             <Checkbox

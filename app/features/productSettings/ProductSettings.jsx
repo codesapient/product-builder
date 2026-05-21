@@ -33,16 +33,29 @@ function buildInitialBadge(product) {
 
   if (badge && typeof badge === 'object') {
     return {
-      badge_text: badge.badge_text || '',
-      badge_category: badge.badge_category || '',
-      badge_url: badge.badge_url || '',
+      text: badge.text || '',
+      category: badge.category || '',
+      category_url: badge.category_url || '',
     }
   }
 
   return {
-    badge_text: '',
-    badge_category: '',
-    badge_url: '',
+    text: '',
+    category: '',
+    category_url: '',
+  }
+}
+
+// specification settings
+function createSpecificationRow(
+  row = {}
+) {
+  return {
+    id:
+      row.id ||
+      crypto.randomUUID(),
+    name: row.name || '',
+    value: row.value || '',
   }
 }
 
@@ -52,19 +65,24 @@ function buildInitialSpecifications(product) {
   const specs = full?.specifications
 
   if (Array.isArray(specs) && specs.length > 0) {
-    return specs
+    return specs.map((row) =>
+      createSpecificationRow(row)
+    )
   }
 
   if (specs && typeof specs === 'object') {
-    return Object.entries(specs).map(([name, value]) => ({
-      name,
-      value: Array.isArray(value)
-        ? value.join(', ')
-        : String(value ?? ''),
-    }))
+    return Object.entries(specs).map(
+      ([name, value]) =>
+        createSpecificationRow({
+          name,
+          value: Array.isArray(value)
+            ? value.join(', ')
+            : String(value ?? ''),
+        })
+    )
   }
 
-  return [{ name: '', value: '' }]
+  return [createSpecificationRow()]
 }
 
 function buildInitialOtherSettings(product) {
@@ -74,11 +92,11 @@ function buildInitialOtherSettings(product) {
     full?.other_settings ?? {}
 
   return {
-    customize_url_button:
-      other.customize_url_button || '',
+    customize_button_url:
+      other.customize_button_url || '',
 
-    social_proof:
-      other.social_proof || '',
+    social_proof_text:
+      other.social_proof_text || '',
   }
 }
 

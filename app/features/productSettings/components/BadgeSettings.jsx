@@ -62,19 +62,20 @@ export default function BadgeSettings({
 
         </InlineStack>
 
-        <UrlPicker
-          storeUrl={storeUrl}
-          value={value.badge_url}
-          onChange={(url) =>
+         <Divider />
+
+        <TextField
+          label="Text"
+          placeholder="#1 Best Seller"
+          value={value.text}
+          onChange={(v) =>
             handleChange(
-              'badge_url',
-              url
+              'text',
+              v
             )
           }
-          fetcher={fetcher}
+          autoComplete="off"
         />
-
-        <Divider />
 
         <BlockStack gap="200">
 
@@ -92,15 +93,12 @@ export default function BadgeSettings({
             >
 
               <TextField
-                label="Badge Text"
-
-                placeholder="e.g. Top Rated"
-
-                value={value.badge_text}
-
+                label="Category"
+                placeholder="In Custom Cut Glass"
+                value={value.category}
                 onChange={(v) =>
                   handleChange(
-                    'badge_text',
+                    'category',
                     v
                   )
                 }
@@ -117,21 +115,17 @@ export default function BadgeSettings({
               }}
             >
 
-              <TextField
-                label="Badge Category"
-
-                placeholder="e.g. Award"
-
-                value={value.badge_category}
-
-                onChange={(v) =>
+              <UrlPicker
+                storeUrl={storeUrl}
+                value={value.category_url}
+                onChange={(url) =>
                   handleChange(
-                    'badge_category',
-                    v
+                    'category_url',
+                    url
                   )
                 }
-
-                autoComplete="off"
+                fetcher={fetcher}
+                label="Category URL"
               />
 
             </div>

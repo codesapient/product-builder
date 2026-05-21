@@ -177,6 +177,7 @@ function UrlPicker({
   value,
   onChange,
   fetcher,
+  label = 'URL',
 }) {
 
   const [open, setOpen] = useState(false)
@@ -322,7 +323,7 @@ function UrlPicker({
       style={{ position: 'relative' }}
     >
       <TextField
-        label="Badge URL"
+        label={label}
         placeholder="Paste a link or search"
         value={open ? query : (value ?? '')}
         onChange={handleQueryChange}

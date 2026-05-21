@@ -47,24 +47,7 @@ export default function MediaUploadField({
             }}
           >
             <BlockStack gap="200" inlineAlign="center">
-              <InlineStack gap="300" blockAlign="center">
-                <Button onClick={() => setPickerOpen(true)}>Upload new</Button>
-                <button
-                  type="button"
-                  onClick={() => setPickerOpen(true)}
-                  style={{
-                    appearance: "none",
-                    background: "transparent",
-                    border: 0,
-                    color: "var(--p-color-text)",
-                    cursor: "pointer",
-                    padding: 0,
-                    textDecoration: "underline",
-                  }}
-                >
-                  Select existing
-                </button>
-              </InlineStack>
+              <Button onClick={() => setPickerOpen(true)}>Upload or select image</Button>
               <Text variant="bodySm" tone="subdued">
                 Accepts images
               </Text>

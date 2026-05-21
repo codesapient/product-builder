@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   BlockStack,
@@ -10,47 +10,246 @@ import {
   TextField,
 } from '@shopify/polaris'
 
-import { DeleteIcon } from '@shopify/polaris-icons'
+import {
+  DeleteIcon,
+  DragHandleIcon,
+} from '@shopify/polaris-icons'
+
+import {
+  DndContext,
+  closestCenter,
+} from '@dnd-kit/core'
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+
+import { CSS } from '@dnd-kit/utilities'
+
+function SortableSpecification({
+  id,
+  row,
+  index,
+  totalItems,
+  handleChange,
+  handleRemove,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  const style = {
+    transform:
+      CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    width: '100%',
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+    >
+      <InlineStack
+        gap="300"
+        wrap={false}
+        blockAlign="end"
+        align="start"
+      >
+
+        <div
+          {...attributes}
+          {...listeners}
+          style={{
+            cursor: 'grab',
+            paddingBottom: '8px',
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            icon={DragHandleIcon}
+            variant="tertiary"
+          />
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          <TextField
+            label={
+              index === 0
+                ? 'Name'
+                : undefined
+            }
+            labelHidden={index !== 0}
+            placeholder="e.g. Material"
+            value={row.name}
+            onChange={(v) =>
+              handleChange(
+                row.id,
+                'name',
+                v
+              )
+            }
+            autoComplete="off"
+          />
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          <TextField
+            label={
+              index === 0
+                ? 'Value'
+                : undefined
+            }
+            labelHidden={index !== 0}
+            placeholder="e.g. Acrylic"
+            value={row.value}
+            onChange={(v) =>
+              handleChange(
+                row.id,
+                'value',
+                v
+              )
+            }
+            autoComplete="off"
+          />
+        </div>
+
+        <div
+          style={{
+            paddingBottom: '2px',
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            icon={DeleteIcon}
+            variant="plain"
+            tone="critical"
+            accessibilityLabel="Remove specification"
+            onClick={() =>
+              handleRemove(row.id)
+            }
+            disabled={totalItems === 1}
+          />
+        </div>
+
+      </InlineStack>
+    </div>
+  )
+}
 
 export default function SpecificationsSettings({
-  value,
+  value = [],
   onChange,
 }) {
 
-  const handleChange = useCallback(
-    (index, field, fieldValue) => {
+  const normalizedValue = useMemo(() => {
+    return value.map((row) => ({
+      id:
+        row.id ||
+        crypto.randomUUID(),
+      name: row.name || '',
+      value: row.value || '',
+    }))
+  }, [value])
 
-      const updated = value.map((row, i) =>
-        i === index
-          ? {
-              ...row,
-              [field]: fieldValue,
-            }
-          : row
-      )
+  const handleChange = useCallback(
+    (id, field, fieldValue) => {
+
+      const updated =
+        normalizedValue.map((row) =>
+          row.id === id
+            ? {
+                ...row,
+                [field]: fieldValue,
+              }
+            : row
+        )
 
       onChange(updated)
     },
-    [value, onChange]
+    [normalizedValue, onChange]
   )
 
   const handleAdd = useCallback(() => {
     onChange([
-      ...value,
+      ...normalizedValue,
       {
+        id: crypto.randomUUID(),
         name: '',
         value: '',
       },
     ])
-  }, [value, onChange])
+  }, [normalizedValue, onChange])
 
   const handleRemove = useCallback(
-    (index) => {
+    (id) => {
       onChange(
-        value.filter((_, i) => i !== index)
+        normalizedValue.filter(
+          (row) => row.id !== id
+        )
       )
     },
-    [value, onChange]
+    [normalizedValue, onChange]
+  )
+
+  const handleDragEnd = useCallback(
+    (event) => {
+      const { active, over } = event
+
+      if (
+        !over ||
+        active.id === over.id
+      ) {
+        return
+      }
+
+      const oldIndex =
+        normalizedValue.findIndex(
+          (row) =>
+            row.id === active.id
+        )
+
+      const newIndex =
+        normalizedValue.findIndex(
+          (row) =>
+            row.id === over.id
+        )
+
+      if (
+        oldIndex === -1 ||
+        newIndex === -1
+      ) {
+        return
+      }
+
+      onChange(
+        arrayMove(
+          normalizedValue,
+          oldIndex,
+          newIndex
+        )
+      )
+    },
+    [normalizedValue, onChange]
   )
 
   return (
@@ -63,96 +262,59 @@ export default function SpecificationsSettings({
           gap="400"
           wrap
         >
-          <Text variant="headingMd" as="h2">
+          <Text
+            variant="headingMd"
+            as="h2"
+          >
             Specifications
           </Text>
         </InlineStack>
 
         <Divider />
 
-        <BlockStack gap="300">
+        <DndContext
+          collisionDetection={
+            closestCenter
+          }
+          onDragEnd={handleDragEnd}
+        >
 
-          {value.map((row, index) => (
-            <InlineStack
-              key={index}
-              gap="300"
-              wrap={false}
-              blockAlign="end"
-            >
+          <SortableContext
+            items={normalizedValue.map(
+              (row) => row.id
+            )}
+            strategy={
+              verticalListSortingStrategy
+            }
+          >
 
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                <TextField
-                  label={
-                    index === 0
-                      ? 'Name'
-                      : undefined
-                  }
-                  labelHidden={index !== 0}
-                  placeholder="e.g. Material"
-                  value={row.name}
-                  onChange={(v) =>
-                    handleChange(
-                      index,
-                      'name',
-                      v
-                    )
-                  }
-                  autoComplete="off"
-                />
-              </div>
+            <BlockStack gap="300">
 
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                <TextField
-                  label={
-                    index === 0
-                      ? 'Value'
-                      : undefined
-                  }
-                  labelHidden={index !== 0}
-                  placeholder="e.g. Acrylic"
-                  value={row.value}
-                  onChange={(v) =>
-                    handleChange(
-                      index,
-                      'value',
-                      v
-                    )
-                  }
-                  autoComplete="off"
-                />
-              </div>
+              {normalizedValue.map(
+                (row, index) => (
+                  <SortableSpecification
+                    key={row.id}
+                    id={row.id}
+                    row={row}
+                    index={index}
+                    totalItems={
+                      normalizedValue.length
+                    }
+                    handleChange={
+                      handleChange
+                    }
+                    handleRemove={
+                      handleRemove
+                    }
+                  />
+                )
+              )}
 
-              <div
-                style={{
-                  paddingBottom: '2px',
-                }}
-              >
-                <Button
-                  icon={DeleteIcon}
-                  variant="plain"
-                  tone="critical"
-                  accessibilityLabel="Remove specification"
-                  onClick={() =>
-                    handleRemove(index)
-                  }
-                  disabled={value.length === 1}
-                />
-              </div>
+            </BlockStack>
 
-            </InlineStack>
-          ))}
+          </SortableContext>
 
-        </BlockStack>
+        </DndContext>
 
         <InlineStack align="center">
           <Button onClick={handleAdd}>
