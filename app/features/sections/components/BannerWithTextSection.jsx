@@ -96,7 +96,7 @@ export default function BannerWithTextSection({
               {IMAGE_SIZE_OPTIONS.map(({ label, value }) => (
                 <Tooltip key={value} content={label}>
                   <Button
-                    pressed={(section.imageSize || "cover") === value}
+                    pressed={(section.imageSize) === value}
                     onClick={() => onChange({ imageSize: value })}
                   >
                     {value === "cover" ? "Fill" : "Fit"}
