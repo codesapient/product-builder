@@ -386,7 +386,7 @@ function MediaGrid({ assets, selectedId, onSelect }) {
 }
 
 function MediaTile({ asset, selected, onSelect }) {
-  const source = asset.previewUrl || asset.url;
+  const source = asset.previewUrl || asset.thumbnailUrl || asset.url;
 
   return (
     <button

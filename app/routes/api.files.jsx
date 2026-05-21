@@ -6,17 +6,22 @@ function getNameFromUrl(url = "") {
   return filename ? decodeURIComponent(filename) : "Shopify image";
 }
 
+function resizeShopifyImage(url, size = "200x200") {
+  if (!url) return url;
+  return url.replace(/(\.[^.?]+)(\?|$)/, `_${size}$1$2`);
+}
+
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const url = new URL(request.url);
   const search = url.searchParams.get("query")?.trim();
-  const after = url.searchParams.get("after") || null;  // NEW
+  const after = url.searchParams.get("after") || null;
 
   const filesRes = await admin.graphql(FILES_QUERY, {
     variables: {
       first: 50,
       query: search ? `filename:*${search}*` : null,
-      after,  // NEW
+      after,
     },
   });
 
@@ -39,6 +44,7 @@ export const loader = async ({ request }) => {
         name: getNameFromUrl(imageUrl),
         kind: "IMAGE",
         url: imageUrl,
+        thumbnailUrl: resizeShopifyImage(imageUrl, "200x200"),
         alt: node.image?.altText || node.alt || "",
         source: "existing",
       };
