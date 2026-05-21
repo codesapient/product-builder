@@ -44,7 +44,6 @@ export const SECTION_SCHEMAS = {
       id: { type: 'string', required: true, description: 'Unique identifier' },
       type: { type: 'string', required: true, description: 'Section type' },
       heading: { type: 'string', required: true, description: 'Section heading' },
-      imageAlignment: { type: 'string', required: false, description: 'Image alignment (left/right)' },
       columns: { type: 'array', required: true, description: 'Array of image columns' },
     },
     columnFields: {
@@ -69,10 +68,11 @@ export const SECTION_SCHEMAS = {
     fields: {
       id: { type: 'string', required: true, description: 'Unique identifier' },
       type: { type: 'string', required: true, description: 'Section type' },
-      backgroundImageUrl: { type: 'string', required: true, description: 'Banner background image URL' },
-      heading: { type: 'string', required: true, description: 'Banner heading' },
-      textAlignment: { type: 'string', required: false, description: 'Text alignment (left/center/right)' },
-      borderRadius: { type: 'number', required: false, description: 'Banner border radius in pixels' },
+      imageUrl: { type: 'string', required: true, description: 'Banner background image URL' },
+      heading: { type: 'string', required: false, description: 'Banner heading' },
+      alignment: { type: 'string', required: false, description: 'Text alignment (left/center/right)' },
+      imageWidth: { type: 'number', required: false, description: 'Image width in percentage' },
+      imageBorderRadius: { type: 'number', required: false, description: 'Banner border radius in pixels' },
     },
   },
 
@@ -383,7 +383,6 @@ The sections are stored in Shopify metafield as JSON:
       
       // TEXT_COLUMNS_WITH_IMAGES fields:
       "heading": "Section heading",
-      "imageAlignment": "left" | "right",
       "columns": [
         {
           "id": "uuid-string",

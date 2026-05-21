@@ -306,26 +306,6 @@ export default function ImageColumnsSection({ section, onChange, onSaved, onVali
           error={headingError}  // add this
         />
 
-        <div>
-          <Text variant="bodySm" as="span">
-            Image Alignment
-          </Text>
-          <ButtonGroup variant="segmented">
-            <Button
-              pressed={section.imageAlignment === "left" || !section.imageAlignment}
-              onClick={() => onChange({ imageAlignment: "left" })}
-            >
-              Left
-            </Button>
-            <Button
-              pressed={section.imageAlignment === "right"}
-              onClick={() => onChange({ imageAlignment: "right" })}
-            >
-              Right
-            </Button>
-          </ButtonGroup>
-        </div>
-
       <Box paddingBlockStart="400">
         <InlineStack align="center" blockAlign="center" gap="300">
           <Button

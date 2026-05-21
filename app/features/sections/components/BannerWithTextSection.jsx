@@ -4,6 +4,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
+  InlineGrid,
   RangeSlider,
   Text,
   TextField,
@@ -33,7 +34,7 @@ export default function BannerWithTextSection({
 }) {
   const [validationError, setValidationError] = useState(false);
   const requiredFields = getRequiredFields(SECTION_TYPES.BANNER_WITH_TEXT);
-  const borderRadius = clampRadius(section.borderRadius);
+  const imageBorderRadius = clampRadius(section.imageBorderRadius);
 
   useEffect(() => {
     if (onValidate === 0) return;
@@ -60,49 +61,69 @@ export default function BannerWithTextSection({
     <BlockStack gap="400">
       <Divider />
 
+      <BlockStack gap="200">
+        <TextField
+          label="Heading"
+          value={section.heading || ""}
+          onChange={(heading) => onChange({ heading })}
+          placeholder="Banner heading"
+          autoComplete="off"
+          error={getFieldError("heading", "Heading")}
+        />
+
+
+
+      </BlockStack>
+
       <MediaUploadField
-        value={section.backgroundImageUrl}
-        alt={section.backgroundImageAlt || "banner background image"}
-        onChange={(backgroundImageUrl) => onChange({ backgroundImageUrl })}
-        error={getFieldError("backgroundImageUrl", "Background image")}
+        value={section.imageUrl}
+        alt="banner image"
+        onChange={(imageUrl) => onChange({ imageUrl })}
+        error={getFieldError("imageUrl", "Background image")}
       />
 
-      <TextField
-        label="Heading"
-        value={section.heading || ""}
-        onChange={(heading) => onChange({ heading })}
-        placeholder="Banner heading"
-        autoComplete="off"
-        error={getFieldError("heading", "Heading")}
-      />
+      <InlineGrid columns={2} gap="400" alignItems="center">
+        <TextField
+          label="Image width"
+          type="number"
+          value={section.imageWidth?.toString() || ""}
+          onChange={(value) =>
+            onChange({
+              imageWidth: Number(value) || 100,
+            })
+          }
+          placeholder="400"
+          autoComplete="off"
+          suffix="%"
+        />
+        <RangeSlider
+          label="Image Border radius"
+          min={MIN_RADIUS}
+          max={MAX_RADIUS}
+          step={1}
+          value={imageBorderRadius}
+          output
+          suffix={<Text as="span" variant="bodySm">{imageBorderRadius}px</Text>}
+          onChange={(imageBorderRadius) => onChange({ imageBorderRadius })}
+        />
+      </InlineGrid>
 
       <BlockStack gap="200">
         <Text variant="bodyMd" as="p">
-          Text alignment
+          Alignment
         </Text>
         <ButtonGroup variant="segmented">
           {ALIGNMENT_OPTIONS.map(({ label, value }) => (
             <Button
               key={value}
-              pressed={(section.textAlignment || "center") === value}
-              onClick={() => onChange({ textAlignment: value })}
+              pressed={(section.alignment || "center") === value}
+              onClick={() => onChange({ alignment: value })}
             >
               {label}
             </Button>
           ))}
         </ButtonGroup>
       </BlockStack>
-
-      <RangeSlider
-        label="Border radius"
-        min={MIN_RADIUS}
-        max={MAX_RADIUS}
-        step={1}
-        value={borderRadius}
-        output
-        suffix={<Text as="span" variant="bodySm">{borderRadius}px</Text>}
-        onChange={(borderRadius) => onChange({ borderRadius })}
-      />
 
     </BlockStack>
   );

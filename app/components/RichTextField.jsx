@@ -34,7 +34,7 @@ const Divider = () => (
   <div style={{ width: '1px', background: '#c9cccf', margin: '2px 4px' }} />
 )
 
-export default function RichTextField({ label, value, onChange }) {
+export default function RichTextField({ label, value, onChange, toolBar }) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -54,6 +54,8 @@ export default function RichTextField({ label, value, onChange }) {
       editor.commands.setContent(value || '')
     }
   }, [editor, value])
+
+  const show = (key) => !toolBar || toolBar.includes(key)
 
   if (!editor) return null
 

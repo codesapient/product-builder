@@ -45,14 +45,12 @@ export default function OtherSettings({
           align="space-between"
           blockAlign="center"
         >
-
           <Text
             variant="headingMd"
             as="h2"
           >
             Other Settings
           </Text>
-
         </InlineStack>
 
         <Divider />
@@ -90,21 +88,6 @@ export default function OtherSettings({
               )
             }
           />
-
-          <Text
-            as="p"
-            tone="subdued"
-            variant="bodySm"
-          >
-            Example:
-            {' '}
-            500+
-            {' '}
-            &lt;strong&gt;bought&lt;/strong&gt;
-            {' '}
-            past month
-          </Text>
-
         </BlockStack>
 
       </BlockStack>

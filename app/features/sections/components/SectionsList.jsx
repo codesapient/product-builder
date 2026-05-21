@@ -249,9 +249,7 @@ export default function SectionsList({ product }) {
         content: 'Products',
         onAction: () => {
           const productId = product?.id?.replace('gid://shopify/Product/', '')
-          const match = window.location.href.match(/admin\.shopify\.com\/store\/([^/]+)/)
-          const storeHandle = match?.[1]
-          open(`https://admin.shopify.com/store/${storeHandle}/products/${productId}`, '_top')
+          open(`https://admin.shopify.com/store/royalty-mirror/products/${productId}`, '_top')
         },
       }}
       secondaryActions={[

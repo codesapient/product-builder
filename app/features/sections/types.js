@@ -49,9 +49,10 @@ export const createBannerWithTextSection = () => ({
   id: crypto.randomUUID(),
   type: SECTION_TYPES.BANNER_WITH_TEXT,
   heading: '',
-  backgroundImageUrl: '',
-  textAlignment: 'center',
-  borderRadius: 0,
+  imageUrl: '',
+  alignment: 'center',
+  imageWidth: 100,
+  imageBorderRadius: 0,
 })
 
 export const createSpacerSection = () => ({
