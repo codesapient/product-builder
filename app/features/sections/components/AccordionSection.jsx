@@ -396,7 +396,7 @@ export default function AccordionSection({
       )}
 
       <Box paddingBlockStart="200">
-        <InlineStack align="start" blockAlign="center" gap="300">
+        <InlineStack align="center" blockAlign="center" gap="300">
           <Button
             icon={PlusIcon}
             onClick={handleAddItem}

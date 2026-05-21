@@ -306,21 +306,6 @@ export default function ImageColumnsSection({ section, onChange, onSaved, onVali
           error={headingError}  // add this
         />
 
-      <Box paddingBlockStart="400">
-        <InlineStack align="center" blockAlign="center" gap="300">
-          <Button
-            icon={PlusIcon}
-            onClick={handleAddColumn}
-            disabled={columns.length >= MAX_IMAGE_COLUMNS}
-            size="slim"
-          >
-            Add column
-          </Button>
-          <Text variant="bodySm" tone="subdued">
-            {columns.length} / {MAX_IMAGE_COLUMNS} columns
-          </Text>
-        </InlineStack>
-        </Box>
       </BlockStack>
 
       {/* Empty state */}
@@ -362,6 +347,23 @@ export default function ImageColumnsSection({ section, onChange, onSaved, onVali
           </BlockStack>
         </SortableContext>
       </DndContext>
+
+      <Box paddingBlockStart="400">
+        <InlineStack align="center" blockAlign="center" gap="300">
+          <Button
+            icon={PlusIcon}
+            onClick={handleAddColumn}
+            disabled={columns.length >= MAX_IMAGE_COLUMNS}
+            size="slim"
+          >
+            Add column
+          </Button>
+          <Text variant="bodySm" tone="subdued">
+            {columns.length} / {MAX_IMAGE_COLUMNS} columns
+          </Text>
+        </InlineStack>
+      </Box>
+      
     </BlockStack>
   );
 }
