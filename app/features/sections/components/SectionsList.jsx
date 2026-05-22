@@ -301,8 +301,9 @@ export default function SectionsList({ product }) {
             <ProductSettings product={product} storeUrl={product.storeUrl} />
           ) : (
 
-            <Layout>
-                <Layout.Section variant="oneThird">
+            <InlineStack gap="400" blockAlign="stretch" wrap={false}>
+                {/* Left — Add a section */}
+                <div style={{ flex: '0 0 33%', minHeight: '80vh' }}>
                   <Card>
                     <BlockStack gap="300">
                       <Text variant="headingSm" as="h2">Add a section</Text>
@@ -324,9 +325,9 @@ export default function SectionsList({ product }) {
                       })}
                     </BlockStack>
                   </Card>
-                </Layout.Section>
+                </div>
 
-                <Layout.Section>
+                <div style={{ flex: '1', minHeight: '80vh' }}>
                   <Card>
 
                     <BlockStack gap="400">
@@ -357,7 +358,7 @@ export default function SectionsList({ product }) {
                           <Banner tone="success" title="Sections saved successfully!" />
                         )}
 
-                      <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 380px)' }}>
+                      <div style={{ overflowY: 'auto', maxHeight: 'calc(75vh)' }}>
                         <SortableContext
                           items={sections.map((s) => s.id)}
                           strategy={verticalListSortingStrategy}
@@ -393,9 +394,9 @@ export default function SectionsList({ product }) {
                       </div>
                     </BlockStack>
                   </Card>
-                </Layout.Section>
+                </div>
 
-            </Layout>
+            </InlineStack>
           )}
 
           <DragOverlay dropAnimation={null}>
